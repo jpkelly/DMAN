@@ -126,3 +126,41 @@ background shell mechanism for future service restoration.
 If the report descriptor becomes available, decode its item structure and derive
 input report lengths/IDs before stripping any payload bytes. Only then determine
 whether a different read method is needed. Preserve the existing raw captures.
+
+## 2026-09-27: first initialization output and control-endpoint check
+
+The dongle enumerated at bus 0 / address 3 (port 1.1 behind the Anker hub), same
+descriptors as before. A 15 s receive-only baseline
+(`captures/baseline-2026-09-27-rx-only`) again returned exactly one report,
+`07 81 10 83 00 00 81 00`, identical to the earlier stopped-at-1:00 capture,
+then silence.
+
+With the owner's explicit one-time authorization, the controller counting down,
+`capture --send-limitimer-init` sent one HID SET_REPORT (`21 09 0200 0000`,
+data `8D 00` + 62 zeros) after 2 s of reading
+(`captures/init-8d00-2026-09-27-running`). **It timed out after ~1.1 s**; no input
+arrived in 20 s. Not retried.
+
+Follow-up read-only standard requests on the same connection:
+
+| Request | Result |
+| --- | --- |
+| GET_DESCRIPTOR report (`81 06 2200`), 5000 ms | Timeout |
+| GET_STATUS device (`80 00`), 2000 ms | Timeout |
+| GET_DESCRIPTOR device / configuration | Returned; macOS may serve these from its cache |
+
+So the device was not answering live control requests at all, not only the
+class request. The configuration descriptor's interface string index
+(`iInterface`) is **`0x5C` = 92**, the index macOS previously logged timing out
+during enumeration. Hypothesis, unverified: the firmware hangs when macOS reads
+that interface string (Windows normally does not request it), which would also
+explain the report-descriptor timeouts, the missing HIDAPI entry and possibly the
+one-report-then-silence pattern. The init timeout says nothing yet about whether
+`8D 00` works. Next test (read-only): poll GET_STATUS from the moment of a replug
+and correlate with the system log.
+
+At the owner's request, **Ultraleap Hand Tracking was completely uninstalled**
+(service booted out; LaunchDaemon, app, `/etc/ultraleap`, `/var/log/ultraleap`,
+package receipt and the old restore-check folder removed; verified gone). Its
+tracker log contained no references to the dongle. Earlier notes about restoring
+it are historical.

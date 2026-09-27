@@ -45,6 +45,11 @@ This section supersedes conflicting statements in the dated history below.
 - **Not implemented:** initialization output, live decoding in the CLI,
   multi-source manager, reconnect routing, display UI.
 - **Not tested:** Windows, Intel macOS, and any real multi-dongle operation.
+- **2026-09-27 hardware:** the one authorized `8D 00` output timed out; the
+  dongle then answered no live control requests (GET_STATUS timed out). Suspect
+  macOS's enumeration request for the dongle's odd interface string index 92.
+  Ultraleap has been uninstalled at the owner's request. See the
+  [HID investigation](docs/hid-investigation.md).
 
 ## History: verified on this Mac
 
