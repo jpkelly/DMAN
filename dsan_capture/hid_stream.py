@@ -1,8 +1,8 @@
 """HID envelope layer: DSAN dongle input reports -> timer byte stream.
 
 Report layout comes from static analysis of the vendor USB library (see
-docs/dongle-research.md, "Input reports wrap a byte stream"). It has not yet
-been exercised against sustained input from real hardware.
+docs/dongle-research.md, "Input reports wrap a byte stream"). It has now been
+exercised on sustained Pi/hidraw input; see the labelled stopped-1:00 fixture.
 
 Normalizing one report is stateless. Frame assembly across reports belongs to a
 per-source decoder, so separate dongles never share a buffer here.

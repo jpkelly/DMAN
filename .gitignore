@@ -1,4 +1,11 @@
 .venv/
+.venv-windows/
+.venv-build-windows/
+build/
+dist/
+windows-sources.json
+windows-sources.tmp
+logs/
 __pycache__/
 *.pyc
 captures/

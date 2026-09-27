@@ -3,13 +3,13 @@
 Original implementation. The frame layout and field positions follow the
 reverse engineering in Depili/limitimer (GPL-2.0-or-later, see
 docs/limitimer-protocol.md), checked against that project's RS-485 captures.
-None of this is verified on the VC-2000PC dongle yet: our own hardware has only
-produced short fragments consistent with it.
+Pi/VC-2000PC captures now confirm framing and P1 stopped at 1:00. Other timer
+states remain to be checked; these dongle frames carry absent (zero) checksums.
 
 Wire frame: 81, 7-bit body bytes (second byte is the type), 83, two checksum
 bytes, then FF on RS-485. The checksum is CRC-16/MODBUS over 81..83 inclusive,
-high byte first. Upstream wire captures always end frames with FF; our one
-dongle fragment does not, so the terminator is optional here.
+high byte first. Upstream wire captures end frames with FF; our sustained
+dongle capture omits it, so the terminator is optional here.
 """
 from dataclasses import dataclass
 

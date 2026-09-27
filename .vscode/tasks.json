@@ -5,19 +5,89 @@
       "label": "DSAN: syntax check",
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
-      "windows": {"command": "${workspaceFolder}/.venv/Scripts/python.exe"},
-      "args": ["-m", "compileall", "-q", "dsan_capture", "tests", "tools"],
-      "group": {"kind": "build", "isDefault": true},
+      "windows": {
+        "command": "${workspaceFolder}/.venv-windows/Scripts/python.exe"
+      },
+      "args": [
+        "-m",
+        "compileall",
+        "-q",
+        "dsan_capture",
+        "tests",
+        "tools",
+        "dsan_display"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": []
     },
     {
       "label": "DSAN: infrastructure tests",
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
-      "windows": {"command": "${workspaceFolder}/.venv/Scripts/python.exe"},
-      "args": ["-m", "unittest", "discover", "-s", "tests", "-v"],
+      "windows": {
+        "command": "${workspaceFolder}/.venv-windows/Scripts/python.exe"
+      },
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
       "group": "test",
       "problemMatcher": []
+    },
+    {
+      "label": "DSAN: confidence display",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": [
+        "-m",
+        "dsan_display",
+        "--pi",
+        "PRO-2000=pi@pi5start.local:/dev/hidraw0",
+        "--replay",
+        "Recorded countdown=captures/pi-p1-running-window",
+        "--perfectcue-pi",
+        "Cue emulator=pi@pi5start.local:/dev/hidraw1"
+      ],
+      "isBackground": true,
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}/.venv-windows/Scripts/python.exe",
+        "args": [
+          "-m",
+          "dsan_display.windows"
+        ]
+      }
+    },
+    {
+      "label": "DSAN: mixed dongle preview",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python",
+      "args": [
+        "-m",
+        "dsan_display",
+        "--pi",
+        "PRO-2000=pi@pi5start.local:/dev/hidraw0",
+        "--perfectcue-pi",
+        "Cue emulator=pi@pi5start.local:/dev/hidraw1",
+        "--replay",
+        "Recorded countdown=captures/pi-p1-running-window"
+      ],
+      "isBackground": true,
+      "problemMatcher": [],
+      "windows": {
+        "command": "${workspaceFolder}/.venv-windows/Scripts/python.exe",
+        "args": [
+          "-m",
+          "dsan_display.windows"
+        ]
+      }
     }
   ]
 }

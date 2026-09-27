@@ -1,0 +1,24 @@
+{
+  "source": "captures/pi-perfectcue-next-isolated",
+  "kind": "Real VC-2000PC input with emulator source, not real PerfectCue controller",
+  "sha256": "e87c5ee5fb7f2352c2a8a255476a7319a101caa867d5f5dbe18616c2ca8233b0",
+  "bytes": 64040,
+  "report_bytes": 8,
+  "report_id_slot": false,
+  "owner_confirmation": "One named manual press plus emulator alternating automatically every ten seconds",
+  "manual_button": "Next",
+  "expected_values": [
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1
+  ],
+  "mapping_scope": "00 Next / 01 Previous with this emulator and dongle only; Blank and real controller untested",
+  "checksum": "No checksum present in observed five-byte frames",
+  "clock_note": "Pi realtime unsynchronized; raw reports copied without modification; timed replay journal in source capture"
+}

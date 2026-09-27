@@ -1,0 +1,36 @@
+{
+  "source_capture": "captures/pi-program-switch",
+  "sha256": "4847a9d54ba8f7c285a2b7a7751b5f346640d8d061e735ac768665ba42e5053e",
+  "bytes": 90008,
+  "report_bytes": 8,
+  "report_id_slot": false,
+  "state_frames": 984,
+  "selection_changes": [
+    {
+      "at_seconds": 0.143719629,
+      "selected_p1running_p1remaining_p2running_p2total_p2elapsed_p2remaining": [
+        0,
+        false,
+        52,
+        false,
+        1920,
+        0,
+        1920
+      ]
+    },
+    {
+      "at_seconds": 18.008492674,
+      "selected_p1running_p1remaining_p2running_p2total_p2elapsed_p2remaining": [
+        1,
+        false,
+        52,
+        false,
+        1920,
+        0,
+        1920
+      ]
+    }
+  ],
+  "label": "P1 paused 0:52 -> P2 selected and stopped at 32:00 (user corrected initial 0:32 typo)",
+  "checksum_status": "absent"
+}

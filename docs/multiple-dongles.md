@@ -1,3 +1,11 @@
+# Current scope update
+
+The primary requirement is now **Windows with one Limitimer dongle and one
+PerfectCue dongle simultaneously**, including cue display. Earlier statements
+below excluding cue display are superseded. Implemented source roles, per-device
+startup and UI are documented in [Windows setup](windows.md); real Windows and
+mixed-device hardware verification are outstanding.
+
 # Multiple dongles and independent displays
 
 The owner requires concurrent dongles and reports that the existing Windows

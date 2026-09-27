@@ -1,7 +1,22 @@
-# DSAN timer investigation
+# DSAN Limitimer and PerfectCue display
 
-First milestone: receive-only hardware discovery, raw capture, annotations, and
-replay. **No verified timer decoder or confidence-monitor UI yet.**
+**Primary deployment target: Windows, with one Limitimer dongle and one PerfectCue
+dongle connected simultaneously.** Each has an explicit role, exact HID path,
+independent initialization and decoder. See [Windows setup](docs/windows.md).
+Limitimer has real controller captures; Next/Previous cue framing has emulator +
+dongle fixtures. Real PerfectCue and Windows execution remain untested. The task
+**DSAN: mixed dongle preview** reads both connected Pi dongles simultaneously.
+
+The first confidence display is running on macOS, with live Pi USB input and
+capture replay. Open `http://127.0.0.1:8765` on the Mac while the **DSAN:
+confidence display** task is running. See [display setup and limits](docs/display.md).
+Basic stopped/running/paused/zero/program-selection behavior now has real fixtures;
+direct Mac USB and full production/platform validation remain outstanding.
+
+**Windows executable build prepared:** [build and run instructions](docs/windows-exe.md).
+It bundles Python, native HID support and the browser assets into `DSANDisplay.exe`.
+The build must run on Windows; no exe has been produced here yet. Source-mode
+packaging checks and 74 tests pass on macOS.
 
 **Core requirement: multiple dongles at once.** Each display will select an
 independent source and timer program, with separate input, decoding, capture and
@@ -10,8 +25,9 @@ existing software. See the [multi-dongle requirements and design](docs/multiple-
 The owner also reports internal switches/jumpers select Limitimer versus
 PerfectCue operation. Each source's confirmed hardware role must match its
 software initialization and decoder; matching USB IDs do not establish that role.
-The CLI currently records one explicitly selected device per invocation; a
-concurrent manager and display UI are not implemented yet.
+The capture CLI records one device per invocation. The display now has separate
+source workers and program selection; persistent identity/reconnect management
+and real multi-dongle hardware testing remain outstanding.
 
 **Latest result:** offline analysis of the supplied PerfectCue installer and
 DSAN's Limitimer installer recovered the actual HID startup/read path. Both use
@@ -20,30 +36,60 @@ output report after opening, then reads a count-prefixed byte stream. The owner
 explicitly confirms this dongle has worked with a Limitimer. See the
 [deep research report](docs/dongle-research.md) and
 [reproducible installer audit](tools/audit_dsan_installer.py).
-No hardware access or device writes occurred during that research; the runtime
-capture utility remains receive-only. Mac operation after initialization is
-still untested.
+No hardware access or device writes occurred during that offline research.
+The runtime now has an explicit initialization-output option; it remains
+receive-only by default. Hardware attempts are documented below.
 
 ## Current status (2026-09-27)
 
 This section supersedes conflicting statements in the dated history below.
 
+- **Production priority (updated):** Windows direct USB, existing DSAN firmware,
+  one Limitimer dongle plus one PerfectCue dongle. Native Mac USB investigation
+  is deferred; Mac replay/Pi preview remains useful for development. No Pi or
+  Mac driver workaround is required by the intended Windows product.
+
+- **Pi breakthrough:** with `0483:101a:d` active, the dongle enumerates as HID,
+  answers live GET_STATUS, and streams data. The full 47-byte report descriptor
+  confirms 8-byte input and 64-byte output/feature reports without report IDs.
+  The reviewed `8D 00` output completed successfully; input was already flowing
+  before it. A labelled stopped-at-1:00 capture now matches P1 selected, stopped,
+  total 60 and elapsed 0 across 110 consecutive states after an old-data prefix.
+  Running, pause, zero and program selection also have labelled captures. P2 at
+  32:00 matched while P1 remained paused at 0:52. Frames have absent checksums. See
+  [Pi results and capture-quality notes](docs/pi5-investigation.md).
+
+- **Latest diagnostic host:** the owner has now provided a ready Pi 5 at
+  `pi@pi5start.local`. It is prepared with a temporary Linux USB quirk and a
+  time-limited enumeration capture. See [Pi investigation](docs/pi5-investigation.md).
+  This supersedes the earlier preference to avoid Pi setup; the Mac/Windows
+  application goal is unchanged.
+
 - **Hardware:** DSAN PRO-2000 controller, RJ45 directly to a single-RJ45
   VC-2000PC dongle, USB via an Anker USB-C adapter/hub. The owner confirms this
   dongle has worked with a Limitimer. Internal DIP switches/jumpers reportedly
   select Limitimer versus PerfectCue; their positions are not yet documented.
-- **Leading hypothesis for the silence:** our captures never sent the vendor
-  application's initialization output (`8D 00` for Limitimer). This is a
-  concrete, unverified hypothesis, not a demonstrated fix.
-- **Authorization:** hardware access remains receive-only. Sending the
-  initialization output requires the owner's explicit, per-test approval.
+- **Mac receive problem:** live control requests and attempted `8D 00`
+  initialization time out. Earlier enumeration captures locate the first
+  observed failure at the interface-string request; the exact firmware fault
+  remains unproven. Passive input yields at most a fragment, not sustained data.
+- **Alternate-port comparison:** moving the adapter changed the observed USB
+  bus from 0 to 1 but reproduced the index-92 enumeration timeout, failed live
+  status/initialization requests and one-report-then-silence behavior.
+- **Authorization (latest):** the owner explicitly approved sending dongle
+  messages and said not to ask again for each message. This supersedes the
+  earlier per-test initialization approval requirement. Continue bounded,
+  logged diagnostics rather than arbitrary command scanning.
 - **Decoding layers (new):** USB report → stream
   ([hid_stream.py](dsan_capture/hid_stream.py)) and Limitimer framing/state
   decoding ([limitimer.py](dsan_capture/limitimer.py)). Verified against upstream
   RS-485 Limitimer captures; our dongle has only produced consistent fragments.
   See the [protocol notes](docs/limitimer-protocol.md).
-- **Not implemented:** initialization output, live decoding in the CLI,
-  multi-source manager, reconnect routing, display UI.
+- **Implemented:** opt-in, logged initialization output (`--send-limitimer-init`).
+- **Display implemented:** live Pi-over-SSH decoding, per-source state, local
+  browser UI, fullscreen, program selection, local warning/overtime settings,
+  replay and explicit stale/disconnected state. Native HID input is available but
+  not hardware-validated here. Persistent reconnect routing is not implemented.
 - **Not tested:** Windows, Intel macOS, and any real multi-dongle operation.
 - **2026-09-27 hardware:** the one authorized `8D 00` output timed out; the
   dongle then answered no live control requests. A replug watch shows the
@@ -275,7 +321,7 @@ python -m unittest discover -s tests -v
 ```
 
 VS Code tasks for these checks are in [tasks.json](.vscode/tasks.json).
-Twenty-three infrastructure tests cover byte preservation, read boundaries,
+Fifty-two tests cover byte preservation, read boundaries,
 corruption/truncation, interrupted sessions, timing, annotations, and transport
 failure. Sixteen decoding tests cover the USB report envelope and Limitimer
 framing/state against upstream capture excerpts and our real fragments; they do

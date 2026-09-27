@@ -16,6 +16,15 @@ Status 2026-09-27. Implementation: [hid_stream.py](../dsan_capture/hid_stream.py
 
 Nothing below is verified end-to-end on the PRO-2000 → VC-2000PC → Mac path.
 
+**Pi update:** the PRO-2000 → VC-2000PC → Pi HID path now delivers sustained
+reports. In a user-labelled P1 stopped-at-1:00 capture, 110 consecutive state
+frames decode to selected index 0, stopped, total 60 and elapsed 0, following
+three older states at opening. The 52-byte state body and absent FF terminator
+are observed across complete dongle frames. Checksum bytes are zero/absent; do
+not describe them as CRC-valid. Running/paused/overtime/program-switch semantics
+remain to be checked. See [Pi results](pi5-investigation.md) and the
+[real fixture regression](../tests/test_dongle_fixture.py).
+
 ## Sources
 
 - [Depili/limitimer](https://gitlab.com/Depili/limitimer) at `1cec6f97`: Go

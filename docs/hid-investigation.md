@@ -249,3 +249,163 @@ The owner reported the RJ45-side LED **on, solid** after this replug (it had
 stayed off after the 09:37 and 09:42 replugs). Its cause is unknown.
 Note: the capture wrapper's `pkill -f 'tcpdump -i XHC'` matched its own shell;
 the leftover root tcpdump processes were stopped explicitly afterwards.
+
+### Current probe with renewed message authorization (2026-09-27 10:02 local)
+
+The owner requested a probe, explicitly approved sending dongle messages, and
+clarified that repeated approval questions are unnecessary. That authorization
+persists for this investigation; earlier per-test restrictions are historical.
+
+Fresh discovery found exactly one `0483:101A`, now on bus **0**, address **4**,
+port path `[1, 1]`, location `0x00110000`. HIDAPI still had no entry and no DSAN
+serial port appeared. IORegistry still reported `iInterface=92`; no
+`kUSBDescriptorOverride` property was visible on the DSAN device/interface nodes.
+This does not establish whether a proposed extension is installed elsewhere.
+The untracked macOS extension work was inspected but not modified or installed.
+
+- [Live GET_STATUS](../inventories/live-status-2026-09-27T170219.629081_0000.json)
+  timed out before the initialization attempt.
+- The [12-second capture](../captures/authorized-probe-2026-09-27T170219.629081_0000/)
+  received one report: `07 81 00 21 6F 09 00 01`.
+- After two seconds of receiving, one reviewed SET_REPORT output (`21 09`,
+  `wValue=0200`, interface 0, `8D 00` plus 62 zeros) was attempted. It timed out;
+  no successful completion or sustained input was observed. No retries were made.
+- Capture length/hash validation passed. Timer display/run state was not provided
+  and was recorded as unknown. The capture records the outbound request/error.
+
+The control endpoint was already unresponsive before this output. This repeats
+the earlier symptom; it does not verify whether initialization works on a
+responsive device. A timeout does not prove that no request bytes reached the
+device. No system-service, driver, firmware or security-setting change was made
+during this probe.
+
+The [last-30-minute enumeration log](../inventories/probe-now-2026-09-27-enumeration-last30m.log)
+includes the current address-4 attachment at 09:50:28 local, followed by the
+string-index-92 timeout at 09:50:33 and a remote-wake failure. These preceded the
+10:02 probe. The shorter last-ten-minute query contained no enumeration events;
+no fresh replug occurred during this probe.
+
+### Next-step review: host descriptor override
+
+The existing [codeless-kext proposal](../macos/build_kext.py) was reviewed offline.
+In a temporary directory it generated a valid plist, matched exactly VID `0483`,
+PID `101A`, revision `0100`, and changed only byte 17 of the 34-byte configuration
+descriptor: `iInterface` from `5C` to `00`. No executable is included. Nothing was
+installed or loaded, and the existing untracked macOS work/build was preserved.
+
+Apple's installed IOBluetoothFamily personality includes the same shape of
+`kUSBDescriptorOverride` configuration-descriptor property merged by
+AppleUSBHostMergeProperties onto IOUSBHostDevice. This supports the proposal's
+property format; it does not prove that our personality will match early enough
+or fix this device. The hypothesis is to omit the problematic string request,
+not to change the dongle's firmware.
+
+Deployment remains unresolved. Apple documents that custom kernel extensions
+on Apple Silicon require Reduced Security and user approval/restart
+([Apple guidance](https://developer.apple.com/documentation/apple-silicon/installing-a-custom-kernel-extension)).
+The unsigned local prototype cannot be presented as an ordinary plug-and-play
+application install. Apple also documents property merging through a codeless
+driver extension in its
+[USB audio design note](https://developer.apple.com/documentation/technotes/tn3190-usb-audio-device-design-considerations).
+That is a possible modern packaging avenue, not proof that this particular
+descriptor override is supported or timely through that mechanism. Signing,
+entitlements and matching behavior need verification before deployment.
+
+After a reviewed installation method is established, test a fresh enumeration:
+confirm the effective interface-string index is zero and that macOS no longer
+requests index 92, then require successful live GET_STATUS/report-descriptor
+responses before repeating initialization and timer-state captures. If the
+device still becomes unresponsive, preserve that result rather than claiming
+the original string-index hypothesis was proven.
+
+### Raspberry Pi/Linux alternative
+
+**Owner preference:** after discussing this option, the owner said they want to
+avoid setting up the Pi. Retain this as research, not the active next step.
+
+**Later update:** the owner subsequently supplied a ready Pi 5 with SSH access.
+The [Pi investigation](pi5-investigation.md) records its runtime-quirk setup and
+USB capture preparation. That is now an active diagnostic route; the earlier
+setup constraint no longer blocks it.
+
+Linux offers a particularly relevant diagnostic route: the documented
+`usbcore.quirks` flag `d` is `USB_QUIRK_CONFIG_INTF_STRINGS`, for devices unable
+to handle configuration/interface strings. The candidate entry for this dongle
+is `usbcore.quirks=0483:101a:d`. Verify the Pi's installed kernel support and
+existing quirks before applying it: flags toggle built-in quirks rather than
+unconditionally enabling them. Prepare the workaround before connecting the
+dongle, then use USB traces to confirm the problematic request is actually
+skipped. This is not yet tested on the user's hardware.
+([Linux 6.6 parameter documentation](https://www.kernel.org/doc/html/v6.6/admin-guide/kernel-parameters.html))
+
+With SSH access, the Pi would also allow kernel-log inspection, HID/libusb probes
+and [usbmon capture](https://docs.kernel.org/usb/usbmon.html), including connection
+setup. Confirm the Pi model, OS/kernel and access before issuing installation or
+boot-configuration commands. This route can test the hypothesis without changing
+Mac startup security or installing the proposed Mac kernel extension.
+
+### Mac-only constraint and modern extension assessment
+
+Continue on the Mac under the owner's preference. Apple documents that a
+“codeless” DriverKit extension still contains a minimal executable subclass and
+ships inside an application, unlike a plist-only codeless kext. It is not enough
+to rename the existing prototype bundle. Distribution also requires appropriate
+signing/entitlements. These facts do not establish that the proposed descriptor
+property can be applied early enough through a dext to prevent this failure.
+([Driver/extensibility guidance](https://developer.apple.com/documentation/kernel/implementing_drivers_system_extensions_and_kexts),
+[DriverKit deployment](https://developer.apple.com/system-extensions/))
+
+The Mac workaround remains an experimental deployment problem, not a demonstrated
+Python-level fix. Do not promise that the modern route avoids all setup/security
+requirements, or change startup security automatically. A vendor firmware fix
+would address the device behavior directly if DSAN provides one, but none is
+known to be available from the current evidence. No Pi or Windows setup, driver
+installation, firmware update or further hardware probing was performed in this
+assessment.
+
+### Production constraint: existing firmware and minimal Mac changes
+
+The owner explicitly requires the Mac app to work with existing DSAN firmware
+and minimal Mac changes. The successful Pi experiment is diagnostic evidence,
+not approval to require a Pi for the finished product. Do not treat a kernel
+extension, lowered startup security, disabled SIP, or a firmware change as the
+default resolution.
+
+Follow-up review found the installed Xcode has DriverKit 24.2 and macOS 15.2 SDKs.
+A signing identity exists, but appropriate DriverKit entitlements/provisioning
+have not been established. Apple's documented codeless-property-merge examples
+support investigating a packaged user-space system extension; they do not prove
+that the descriptor override will apply before this device's failing request.
+No DriverKit prototype was installed or activated and no Mac security setting
+was changed.
+
+The public IOUSBHostDevice header documents that `resetWithError:` destroys the
+current device object and creates a new one on successful re-enumeration. It is
+not documented as a reset that retains a per-device property override. Therefore
+it must not be presented as an established app-only escape from the enumeration
+problem. The direct-Mac solution remains unproven under the requested constraints.
+
+### Alternate Mac USB-C port comparison (2026-09-27 10:18 local)
+
+After the owner reported moving/replugging the Anker adapter and dongle,
+[discovery](../inventories/alternate-port-2026-09-27T171723.006516_0000.json)
+confirmed the DSAN location changed from `0x00110000` to `0x01110000` and USB
+bus **0** to **1**, address 4, port path `[1, 1]`. No HIDAPI entry or DSAN serial
+port appeared. This was an actual USB location change, not reuse of the earlier
+bus/address assumption.
+
+The [enumeration log](../inventories/alternate-port-2026-09-27T171723.006516_0000-enumeration.log)
+shows the new location enumerating at 10:16:50 and again at 10:16:59 local. Both
+were followed by a string-index-92 timeout, before our probe. The current
+connection's timeout occurred at 10:17:04.539.
+
+[Live GET_STATUS](../inventories/alternate-port-2026-09-27T171723.006516_0000-live-status.json)
+timed out. The [12-second capture](../captures/alternate-port-2026-09-27T171723.006516_0000/)
+received `07 81 00 21 6F 02 00 01` once. One authorized `8D 00` SET_REPORT was
+attempted after a two-second baseline and timed out; no sustained input followed.
+Integrity validation passed. Timer display/run state was not reported.
+
+Changing this Mac port did not resolve the symptom. This makes a fault confined
+to the previous socket less likely, but does not independently rule out the
+shared hub, cable, device or enumeration behavior. No driver/security settings
+were changed, no firmware was modified, and no further commands were scanned.

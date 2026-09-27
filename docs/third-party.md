@@ -48,6 +48,11 @@ engineering may be used freely. Consequently:
 
 A formal application license file has not been added yet.
 
+The Windows pivot adds an original candidate PerfectCue byte mapping from the
+protocol facts in clock8002's `perfectcue.md`. No upstream implementation or
+vendor DLL was copied. Its HID interpretation remains unverified with hardware;
+see [Windows implementation limits](windows.md). No new dependencies were added.
+
 The additional owner-supplied forks
 [sytem/clock-8001](https://gitlab.com/sytem/clock-8001) and
 [jpkelly/clock8002](https://github.com/jpkelly/clock8002) were also inspected. Their
@@ -75,3 +80,20 @@ PyUSB uses a separately installed libusb runtime. This Mac already had it at
 runtime later, audit the exact binary's license/source notices and satisfy LGPL
 source and relinking/replacement requirements. Native packaging, code signing,
 and per-platform dependency license audits remain future work.
+
+## Windows executable build
+
+The [Windows build](windows-exe.md) pins PyInstaller 6.22.3 as a build-only
+dependency. Its [bundling exception](https://pyinstaller.org/en/stable/license.html)
+permits distributing generated executables under terms compatible with the
+application's dependencies; it does not require licensing the application under
+GPL merely because PyInstaller bundled it. PyInstaller itself is not modified.
+
+The build embeds the existing HIDAPI, pySerial and PyUSB notices and the license
+file from the actual Python installation. It also places these in the output ZIP
+with dependency versions and build metadata. Keep the notices with distributed
+packages. Native Windows HID does not require the separately installed libusb
+runtime; this build does not intentionally bundle it. Proprietary vendor binaries,
+GPL test fixtures, private captures, device configurations and logs are excluded.
+No Windows binary or distribution has yet been produced or audited in this session;
+the frozen smoke test and actual dependency collection must run on Windows.

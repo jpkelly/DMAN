@@ -1,0 +1,44 @@
+{
+  "source_capture": "captures/pi-p1-running-window",
+  "sha256": "bb658b5235df7352d7c413e726b1b8e7abfbb4b65a2fe57c0bd8ae6258cee442",
+  "bytes": 90008,
+  "report_bytes": 8,
+  "report_id_slot": false,
+  "state_frames": 976,
+  "label": "User starts P1 from stopped 1:00 and confirms physical display 0:00 after expiry",
+  "observed_run_transition": {
+    "at_seconds": 19.161567618,
+    "selected_running_total_elapsed_remaining_continue": [
+      0,
+      true,
+      60,
+      0,
+      60,
+      false
+    ]
+  },
+  "first_zero": {
+    "at_seconds": 78.404189212,
+    "selected_running_total_elapsed_remaining_continue": [
+      0,
+      true,
+      60,
+      60,
+      0,
+      false
+    ]
+  },
+  "last_change": {
+    "at_seconds": 89.380681021,
+    "selected_running_total_elapsed_remaining_continue": [
+      0,
+      true,
+      60,
+      71,
+      -11,
+      false
+    ]
+  },
+  "checksum_status": "absent",
+  "limitations": "No CRC protection; elapsed continues after zero while physical display clamps to zero; no other programs or optional overtime modes verified"
+}

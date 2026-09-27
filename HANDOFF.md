@@ -1,3 +1,12 @@
+**Latest cue evidence:** the user has no PerfectCue controller box, only an
+emulator alternating every ten seconds. Next/Previous manual-action captures plus
+that clarification establish framed payloads `81 0F 01 00/01 83` on this path.
+The decoder and real fixtures now cover that stream; bare serial cue bytes are
+not the HID format. Real PerfectCue, Blank and Windows USB are still untested.
+All 70 tests pass. **DSAN: mixed dongle preview** runs both Pi HID readers at
+localhost:8765 with a live timer and cue overlay. Details supersede older
+provisional-parser paragraphs below; see [Windows notes](docs/windows.md).
+
 # Handoff prompt: DSAN display application
 
 You are taking over an in-progress project in `/Users/jp/Documents/GitHub/DMAN`.
@@ -6,6 +15,29 @@ preserve existing files, and use the accumulated evidence instead of restarting
 hardware discovery or asking questions the user has already resolved.
 
 ## Goal and requirements
+
+**Latest direction supersedes earlier Mac-first requirements:** prioritize a
+Windows application reading TWO dongles simultaneously: one Limitimer and one
+PerfectCue. Their identical USB IDs cannot establish hardware role. Bind each by
+exact HID path, name it, store its role and initialization preference, and keep
+readers/decoders/state independent. Never send the Limitimer mode to the cue
+source. See [Windows setup and verification limits](docs/windows.md). Windows
+native execution and real mixed-dongle testing are still outstanding. Mac direct
+USB work is deferred. Existing Mac/Pi display and replay remain available.
+
+The Windows launcher supports saved per-device roles and optional `8D 00` or
+`8D 01` startup. PerfectCue interpretation is a clearly labelled provisional
+mapping from upstream serial notes, not verified HID hardware behavior. Its UI
+can overlay cues on the countdown or show the cue source alone. Obtain actual
+labelled PerfectCue captures before claiming cue support is verified.
+
+**Latest implementation:** a first browser confidence display now runs on the Mac
+at `http://127.0.0.1:8765` via the **DSAN: confidence display** task. See
+[display.md](docs/display.md). Its live source is Pi-over-SSH, not direct Mac USB.
+It also supports replay and separate source workers. Four real dongle fixtures
+cover stopped, running/zero, paused and P1→P2 selection; P2 32:00 was confirmed
+while P1 stayed paused at 0:52. The current full suite passed 52 tests. Older
+sections saying no UI/verified dongle frames exist are superseded by this update.
 
 Build a cross-platform application that displays a large, readable countdown from
 DSAN hardware on a live-event confidence monitor. Develop on macOS; target Apple
@@ -55,6 +87,23 @@ and no AGENTS.md was found. Recheck rather than assuming that remains true.
   message substitutes for the internal setting.
 - The user currently has no Windows machine or alternative USB adapter. Do not
   make access to either a prerequisite for the next Mac experiment.
+- The user subsequently considered a Raspberry Pi, then explicitly said they
+  want to avoid setting one up. Keep work on the Mac; do not make Pi setup a
+  dependency or keep requesting Pi/SSH details.
+- **Later update superseding that constraint:** the owner supplied a ready Pi 5,
+  `ssh pi@pi5start.local`. See [current Pi preparation and capture state](docs/pi5-investigation.md).
+  SSH works; a runtime `0483:101a:d` quirk is set, and a 15-minute USB monitor was
+  armed pending attachment. Check whether it is still running before use. Pi
+  timestamps are unsynchronized; a clock calibration is saved. No boot edits.
+- **Pi result update:** the dongle attached successfully with quirk `0x8`,
+  exposed `/dev/hidraw0`, answered live GET_STATUS, and supplied its full HID
+  report descriptor. The authorized initialization succeeded on the wire; data
+  also flowed before it. USB monitoring is now stopped and copied locally.
+  See the Pi report for journal-versus-USB-trace loss and the new tmpfs recorder.
+  The stopped-at-1:00 state was subsequently confirmed: 110 consecutive frames
+  match P1 selected/stopped/60 seconds after three old frames at connection start.
+  A real fixture/regression exists; all 44 current tests pass. Next is an armed
+  running capture. Checksums on this dongle stream are zero/absent, not validated.
 - The last research work was deliberately offline. Hardware availability now is
   unknown; do not assume the dongle is attached.
 
@@ -246,7 +295,18 @@ of the app and do not copy their artwork or implementation. A draft
 
 ## Authorization and next work
 
-The user's original instruction was receive-only hardware access: **no protocol
+**Latest user instructions, 2026-09-27:** the owner explicitly approved sending
+dongle messages and said not to ask again. This supersedes the original
+receive-only/per-test approval restrictions described historically below for
+ordinary dongle communication during this investigation. Record all output and
+use targeted, bounded diagnostics. It is not an instruction to send messages to
+third parties. Opt-in initialization is now implemented. A current probe at
+17:02 UTC found bus 0/address 4, GET_STATUS timeout, one 8-byte input fragment,
+and a timeout sending the reviewed `8D 00` output. No sustained input followed.
+Use the current README and HID investigation for updates beyond this original
+handoff, including the enumeration captures, decoder work and Ultraleap removal.
+
+The user's original instruction (superseded as described above) was receive-only hardware access: **no protocol
 commands, firmware changes or automatic baud scanning**. The user has not yet
 authorized the newly identified initialization output. Researching/documenting
 it is not authorization to send it. The agreed next procedure is:

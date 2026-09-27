@@ -1,0 +1,16 @@
+{
+  "source": "captures/pi-p1-stopped-0100",
+  "kind": "real VC-2000PC USB input reports, Linux hidraw with interface-string quirk",
+  "label": "Owner confirmed program 1 stopped at 1:00",
+  "sha256": "5aaab331fca08a2fc4ea43c3ef1665ae8e862b94b8c786d0ee5b5af2ef4cd129",
+  "bytes": 10008,
+  "report_bytes": 8,
+  "report_id_slot": false,
+  "state_frames": 113,
+  "initial_previous_state_frames": 3,
+  "stopped_0100_frames": 110,
+  "first_matching_frame_elapsed_ns": 366762703,
+  "checksum_status": "absent (zero), not CRC-validated",
+  "clock_note": "Original Pi wall clock unsynchronized; session offsets monotonic",
+  "scope": "Validates P1 selected/stopped/60-second total/zero elapsed only; no claim for other programs or flags"
+}

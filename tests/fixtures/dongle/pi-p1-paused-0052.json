@@ -1,0 +1,16 @@
+{
+  "source_capture": "captures/pi-p1-paused-0052",
+  "sha256": "327410dc55518ee2ac6ffd2ca3d32ee9a3170b2f12231509d5276a0453abcbca",
+  "bytes": 10008,
+  "report_bytes": 8,
+  "report_id_slot": false,
+  "state_frames": 112,
+  "label": "Owner reports paused at 0:52; P1 from setup; intervening reset/start after earlier zero not reported",
+  "observed_values": {
+    "(0, True, 60, 71, -11)": 2,
+    "(0, True, 60, 72, -12)": 1,
+    "(0, False, 60, 8, 52)": 109
+  },
+  "checksum_status": "absent",
+  "scope": "P1 paused at 52 seconds remaining; preserve any stale opening states separately"
+}
