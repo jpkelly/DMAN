@@ -164,3 +164,36 @@ At the owner's request, **Ultraleap Hand Tracking was completely uninstalled**
 package receipt and the old restore-check folder removed; verified gone). Its
 tracker log contained no references to the dongle. Earlier notes about restoring
 it are historical.
+
+### Replug with control-endpoint watch (Ultraleap removed)
+
+[tools/ep0_watch.py](../tools/ep0_watch.py) polled standard GET_STATUS every
+250 ms for 120 s across an owner replug; the macOS unified log was read for the
+same window (local time; saved under `inventories/replug-2026-09-27-*`). Result:
+**no GET_STATUS succeeded at any point** (145 attempts).
+
+| Local time | Event (kernel log) |
+| --- | --- |
+| 08:26:14.916 | Enumerated `0483:101a` at 12 Mbps |
+| 08:26:14.920 | SET_CONFIGURATION 1 by AppleUSBHostCompositeDevice (last request that succeeded) |
+| ~08:26:14.93 | macOS requests string descriptor **index 92** (`iInterface`) |
+| 08:26:19.937 | `type 0x03 index 92 length 2: … standard request timed out after 5000ms` |
+| 08:26:23.369 | `failed to enable remote wake` |
+| 08:26:23.373+ | AppleUserUSBHostHIDDevice opens the interface; subsequent EP0 requests time out |
+
+Our first request came after the index-92 request had already hung, and
+Ultraleap is no longer installed. So the control endpoint stops responding
+during macOS's own enumeration, at the interface-string request, with no
+application involved.
+
+Working explanation (strong, not proven): the firmware mishandles the bogus
+`iInterface` index 92 and stops servicing USB. VID `0483` is STMicroelectronics;
+on STM32 USB device peripherals an IN buffer already armed is sent by hardware
+without firmware help, which would explain exactly one report followed by
+silence. Windows typically does not request interface strings during
+enumeration, consistent with the dongle working there. Linux commonly reads
+`iInterface` when configuring a device, so it may be affected too (untested).
+
+Consequences: on macOS the dongle is unusable before any application can open
+it. Retrying `8D 00`, different timeouts, or another USB-C hub cannot help. The
+earlier SET_REPORT timeout does not show whether `8D 00` works.
