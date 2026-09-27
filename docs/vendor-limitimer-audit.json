@@ -1,0 +1,202 @@
+{
+  "source": "VideoClockForLimitimer/VideoClockForLimitimerSetup.exe",
+  "installer_bytes": 10160640,
+  "installer_sha256": "69f23a1ce3c9df04de31589717313bcb01866a2129810cc5dcaaa713b3897212",
+  "method": "Static PE/zlib inspection only; no vendor code executed or loaded",
+  "hash_scope": "Embedded hashes cover PE headers through last raw section, excluding overlays/installer metadata",
+  "payload_blocks": [
+    {
+      "offset": 1308450,
+      "compressed_bytes": 2776965,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 2055570262
+    },
+    {
+      "offset": 4085423,
+      "compressed_bytes": 190368,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 231533855
+    },
+    {
+      "offset": 4275799,
+      "compressed_bytes": 2023702,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 3761041451
+    },
+    {
+      "offset": 6299509,
+      "compressed_bytes": 2231715,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 1539343389
+    },
+    {
+      "offset": 8531232,
+      "compressed_bytes": 265671,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 215659985
+    },
+    {
+      "offset": 8796911,
+      "compressed_bytes": 92658,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 3962837475
+    },
+    {
+      "offset": 8889577,
+      "compressed_bytes": 416782,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 3747958102
+    },
+    {
+      "offset": 9306367,
+      "compressed_bytes": 685735,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 26747086
+    },
+    {
+      "offset": 9992110,
+      "compressed_bytes": 168048,
+      "expanded_bytes": 645631,
+      "header_unknown_u32": 3222517884
+    }
+  ],
+  "payload_record_count": 80,
+  "images": [
+    {
+      "name": "USBIF.dll",
+      "payload_offset": 33772344,
+      "pe_section_span_bytes": 69632,
+      "pe_section_span_sha256": "6a9e004a2ec543a27d351425e5a4aa99099fc5e80e24ac705eb64586f1f87ba6",
+      "image_base": "0x10000000",
+      "usb_imports": [],
+      "read_write_imports": [
+        {
+          "name": "CreateFileA",
+          "iat_va": "0x10009004"
+        },
+        {
+          "name": "WriteFile",
+          "iat_va": "0x1000900c"
+        },
+        {
+          "name": "GetOverlappedResult",
+          "iat_va": "0x10009030"
+        },
+        {
+          "name": "ReadFile",
+          "iat_va": "0x10009038"
+        }
+      ],
+      "exports": {
+        "_hidEnum@8": "0x1700",
+        "_hidGetAttributes@16": "0x1090",
+        "_hidGetFeature@12": "0x1550",
+        "_hidGetGUID@4": "0x1030",
+        "_hidGetIndexedStringA@16": "0x11e0",
+        "_hidGetIndexedStringW@16": "0x1150",
+        "_hidGetManufacturerStringA@12": "0x12e0",
+        "_hidGetManufacturerStringW@12": "0x1250",
+        "_hidGetProductStringA@12": "0x13e0",
+        "_hidGetProductStringW@12": "0x1350",
+        "_hidGetSerialNumberStringA@12": "0x14e0",
+        "_hidGetSerialNumberStringW@12": "0x1450",
+        "_hidRegisterDeviceNotification@4": "0x15e0",
+        "_hidUnregisterDeviceNotification@4": "0x1680",
+        "_usbActiveLedOff@0": "0x2790",
+        "_usbActiveLedOn@0": "0x2770",
+        "_usbBell@0": "0x2830",
+        "_usbBreakOff@0": "0x2810",
+        "_usbBreakOn@0": "0x27f0",
+        "_usbClearDisplay@0": "0x2a40",
+        "_usbClearLine@4": "0x2a50",
+        "_usbClose@0": "0x1b70",
+        "_usbEcho@4": "0x2850",
+        "_usbIsConnected@0": "0x1b60",
+        "_usbModeLedOff@0": "0x2750",
+        "_usbModeLedOn@0": "0x2730",
+        "_usbOpen@0": "0x1bd0",
+        "_usbOpenByDevName@4": "0x2300",
+        "_usbOpenByID@4": "0x1be0",
+        "_usbOpenByName@4": "0x21e0",
+        "_usbOpenByNameSubstr@4": "0x2270",
+        "_usbReadData@8": "0x2530",
+        "_usbReadFeature@8": "0x2670",
+        "_usbReadMsg@8": "0x2390",
+        "_usbRepeatOff@0": "0x27d0",
+        "_usbRepeatOn@0": "0x27b0",
+        "_usbRequestID@4": "0x28a0",
+        "_usbSetBackgroundColor@12": "0x2bc0",
+        "_usbSetID@4": "0x2880",
+        "_usbSetLed@8": "0x2930",
+        "_usbSetScrollArea@12": "0x2a70",
+        "_usbShiftLedOff@0": "0x2710",
+        "_usbShiftLedOn@0": "0x26f0",
+        "_usbWriteCmd@12": "0x25e0",
+        "_usbWriteData@8": "0x25c0",
+        "_usbWriteImage@20": "0x2aa0",
+        "_usbWriteMsg@8": "0x24d0",
+        "_usbWriteString@20": "0x2960",
+        "_usbWriteText@16": "0x29d0"
+      }
+    },
+    {
+      "name": "VideoClockForLimitimer.exe",
+      "payload_offset": 33847562,
+      "pe_section_span_bytes": 344064,
+      "pe_section_span_sha256": "55da7d25edecdd351bd56828814c5f693cc67abca83993af43619c8108cad9b8",
+      "image_base": "0x400000",
+      "usb_imports": [
+        {
+          "name": "_usbWriteMsg@8",
+          "iat_va": "0x4173a0"
+        },
+        {
+          "name": "_usbOpenByID@4",
+          "iat_va": "0x4173a4"
+        },
+        {
+          "name": "_usbClose@0",
+          "iat_va": "0x4173a8"
+        },
+        {
+          "name": "_usbReadData@8",
+          "iat_va": "0x4173ac"
+        },
+        {
+          "name": "_usbIsConnected@0",
+          "iat_va": "0x4173b0"
+        }
+      ],
+      "read_write_imports": [
+        {
+          "name": "WriteFile",
+          "iat_va": "0x417098"
+        },
+        {
+          "name": "ReadFile",
+          "iat_va": "0x4170ac"
+        },
+        {
+          "name": "CreateFileA",
+          "iat_va": "0x417148"
+        }
+      ],
+      "exports": {}
+    }
+  ],
+  "configuration_hints": [
+    {
+      "name": "Default.cfg",
+      "settings": [
+        "0.75,\t",
+        "255,\t",
+        "1,\t"
+      ]
+    }
+  ],
+  "previous_source": "/var/folders/r4/m52n8qd5387_v9nscg3sm1t00000gn/T/vscode-agent-codex-sandbox-AdzJ05/dsan-hid-hs4ncwwo/limitimer/VideoClockForLimitimerSetup.exe",
+  "source_zip": {
+    "path": "VideoClockForLimitimer.zip",
+    "sha256": "470a2cafc48e0f7ce93a0b1812a819b96e9a8af0e55490abd400dbc3bf3cd1f7"
+  }
+}

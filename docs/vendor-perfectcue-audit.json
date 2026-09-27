@@ -1,0 +1,215 @@
+{
+  "source": "VideoClock_For_PerfectCue/VideoClockForPerfectCueSetup.exe",
+  "installer_bytes": 7546880,
+  "installer_sha256": "ebc6df7eca35821f23f18704ce6d1795c4249df8fc862efd8ed5051973430b71",
+  "method": "Static PE/zlib inspection only; no vendor code executed or loaded",
+  "hash_scope": "Embedded hashes cover PE headers through last raw section, excluding overlays/installer metadata",
+  "payload_blocks": [
+    {
+      "offset": 1319512,
+      "compressed_bytes": 1701460,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 945176221
+    },
+    {
+      "offset": 3020980,
+      "compressed_bytes": 199671,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 204078887
+    },
+    {
+      "offset": 3220659,
+      "compressed_bytes": 145161,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 4258130072
+    },
+    {
+      "offset": 3365828,
+      "compressed_bytes": 40300,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 2974992326
+    },
+    {
+      "offset": 3406136,
+      "compressed_bytes": 131384,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 109725577
+    },
+    {
+      "offset": 3537528,
+      "compressed_bytes": 72867,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 739620456
+    },
+    {
+      "offset": 3610403,
+      "compressed_bytes": 104234,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 3063121362
+    },
+    {
+      "offset": 3714645,
+      "compressed_bytes": 30506,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 2166744676
+    },
+    {
+      "offset": 3745159,
+      "compressed_bytes": 48665,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 1661409854
+    },
+    {
+      "offset": 3793832,
+      "compressed_bytes": 708519,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 501488597
+    },
+    {
+      "offset": 4502359,
+      "compressed_bytes": 1012694,
+      "expanded_bytes": 4194304,
+      "header_unknown_u32": 3833203219
+    },
+    {
+      "offset": 5515061,
+      "compressed_bytes": 2031430,
+      "expanded_bytes": 4105613,
+      "header_unknown_u32": 172077901
+    }
+  ],
+  "payload_record_count": 79,
+  "images": [
+    {
+      "name": "USBIF.dll",
+      "payload_offset": 49824534,
+      "pe_section_span_bytes": 69632,
+      "pe_section_span_sha256": "6a9e004a2ec543a27d351425e5a4aa99099fc5e80e24ac705eb64586f1f87ba6",
+      "image_base": "0x10000000",
+      "usb_imports": [],
+      "read_write_imports": [
+        {
+          "name": "CreateFileA",
+          "iat_va": "0x10009004"
+        },
+        {
+          "name": "WriteFile",
+          "iat_va": "0x1000900c"
+        },
+        {
+          "name": "GetOverlappedResult",
+          "iat_va": "0x10009030"
+        },
+        {
+          "name": "ReadFile",
+          "iat_va": "0x10009038"
+        }
+      ],
+      "exports": {
+        "_hidEnum@8": "0x1700",
+        "_hidGetAttributes@16": "0x1090",
+        "_hidGetFeature@12": "0x1550",
+        "_hidGetGUID@4": "0x1030",
+        "_hidGetIndexedStringA@16": "0x11e0",
+        "_hidGetIndexedStringW@16": "0x1150",
+        "_hidGetManufacturerStringA@12": "0x12e0",
+        "_hidGetManufacturerStringW@12": "0x1250",
+        "_hidGetProductStringA@12": "0x13e0",
+        "_hidGetProductStringW@12": "0x1350",
+        "_hidGetSerialNumberStringA@12": "0x14e0",
+        "_hidGetSerialNumberStringW@12": "0x1450",
+        "_hidRegisterDeviceNotification@4": "0x15e0",
+        "_hidUnregisterDeviceNotification@4": "0x1680",
+        "_usbActiveLedOff@0": "0x2790",
+        "_usbActiveLedOn@0": "0x2770",
+        "_usbBell@0": "0x2830",
+        "_usbBreakOff@0": "0x2810",
+        "_usbBreakOn@0": "0x27f0",
+        "_usbClearDisplay@0": "0x2a40",
+        "_usbClearLine@4": "0x2a50",
+        "_usbClose@0": "0x1b70",
+        "_usbEcho@4": "0x2850",
+        "_usbIsConnected@0": "0x1b60",
+        "_usbModeLedOff@0": "0x2750",
+        "_usbModeLedOn@0": "0x2730",
+        "_usbOpen@0": "0x1bd0",
+        "_usbOpenByDevName@4": "0x2300",
+        "_usbOpenByID@4": "0x1be0",
+        "_usbOpenByName@4": "0x21e0",
+        "_usbOpenByNameSubstr@4": "0x2270",
+        "_usbReadData@8": "0x2530",
+        "_usbReadFeature@8": "0x2670",
+        "_usbReadMsg@8": "0x2390",
+        "_usbRepeatOff@0": "0x27d0",
+        "_usbRepeatOn@0": "0x27b0",
+        "_usbRequestID@4": "0x28a0",
+        "_usbSetBackgroundColor@12": "0x2bc0",
+        "_usbSetID@4": "0x2880",
+        "_usbSetLed@8": "0x2930",
+        "_usbSetScrollArea@12": "0x2a70",
+        "_usbShiftLedOff@0": "0x2710",
+        "_usbShiftLedOn@0": "0x26f0",
+        "_usbWriteCmd@12": "0x25e0",
+        "_usbWriteData@8": "0x25c0",
+        "_usbWriteImage@20": "0x2aa0",
+        "_usbWriteMsg@8": "0x24d0",
+        "_usbWriteString@20": "0x2960",
+        "_usbWriteText@16": "0x29d0"
+      }
+    },
+    {
+      "name": "VideoClockForPerfectCue.exe",
+      "payload_offset": 49894287,
+      "pe_section_span_bytes": 344064,
+      "pe_section_span_sha256": "60ab9cc122b0a96e68e80a12993a4ae51bc1840c79390cd853490b294d72872d",
+      "image_base": "0x400000",
+      "usb_imports": [
+        {
+          "name": "_usbWriteMsg@8",
+          "iat_va": "0x4173a0"
+        },
+        {
+          "name": "_usbOpenByID@4",
+          "iat_va": "0x4173a4"
+        },
+        {
+          "name": "_usbClose@0",
+          "iat_va": "0x4173a8"
+        },
+        {
+          "name": "_usbReadData@8",
+          "iat_va": "0x4173ac"
+        },
+        {
+          "name": "_usbIsConnected@0",
+          "iat_va": "0x4173b0"
+        }
+      ],
+      "read_write_imports": [
+        {
+          "name": "WriteFile",
+          "iat_va": "0x417098"
+        },
+        {
+          "name": "ReadFile",
+          "iat_va": "0x4170ac"
+        },
+        {
+          "name": "CreateFileA",
+          "iat_va": "0x417148"
+        }
+      ],
+      "exports": {}
+    }
+  ],
+  "configuration_hints": [
+    {
+      "name": "Default.cfg",
+      "settings": [
+        "0.74,\t",
+        "255,\t",
+        "3,\t"
+      ]
+    }
+  ]
+}

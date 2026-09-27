@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+captures/
+inventories/
+.DS_Store
+
+# Proprietary DSAN vendor packages: kept locally for offline audit, never committed
+VideoClockForLimitimer/
+VideoClock_For_PerfectCue/
+VideoClockForLimitimer.zip
+VideoClock_For_PerfectCue.zip
