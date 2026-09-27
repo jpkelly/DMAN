@@ -247,8 +247,9 @@ Wi-Fi are both supported when the client has a route to the server.
 Timer only / Cues only / Both, minimal display, timer/cue sizes, warning threshold
 and overtime presentation. The confidence display keeps a standard readable view
 of its selected timer and cue inputs; these presentation controls do not resize,
-hide or recolor it. Its default warning threshold remains 30 seconds and it follows
-the device's stop-at-zero presentation.
+hide or recolor it. Its default warning threshold remains 30 seconds. **Show overtime past zero**
+is the shared exception: it uses received raw time in both confidence and video
+views, overriding stop-at-zero presentation when enabled.
 
 Settings are shared by the application server and saved in `video-settings.json`
 (in the Windows user-data directory for the packaged app). All open `/output`
@@ -276,3 +277,10 @@ UI simplification: the explanatory banner, routine synchronization message and
 Minimal display checkbox have been removed from the settings panel. Clean video
 presentation is the default. The underlying saved minimal preference remains
 compatible with existing settings, while save errors appear only when needed.
+
+Overtime correction: Show overtime past zero now applies to confidence as well as
+video, and remains available even when the video layout is Cues only. Both live
+views were observed at −2:00 with the option enabled. This renders received raw
+time; it does not simulate elapsed time. Size, layout, minimal presentation and
+the adjustable warning threshold remain video-only. JavaScript syntax and editor
+checks passed.

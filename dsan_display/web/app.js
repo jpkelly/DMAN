@@ -143,7 +143,8 @@ function render(){
   displayedSourceId=source?.id || null;
   $('source').disabled=$('program').disabled=videoMode==='cue';
   $('cue-source').disabled=videoMode==='timer';
-  $('warning').disabled=$('overtime').disabled=$('timer-size').disabled=!videoReady || videoMode==='cue';
+  $('warning').disabled=$('timer-size').disabled=!videoReady || videoMode==='cue';
+  $('overtime').disabled=!videoReady;
   $('cue-size').disabled=!videoReady || videoMode==='timer';
   $('minimal').disabled=$('display-mode').disabled=!videoReady;
   if (!source){
@@ -178,7 +179,7 @@ function render(){
   const index = $('program').value === 'active' ? source.selected : Number($('program').value);
   const program = source.programs[index];
   const stale = requestFailed || !source.fresh;
-  const seconds = program ? (outputMode && $('overtime').checked ? program.raw_seconds : program.seconds) : null;
+  const seconds = program ? ($('overtime').checked ? program.raw_seconds : program.seconds) : null;
   const classes = [];
   if (source.kind === 'replay') classes.push('replay');
   if (stale) classes.push('stale');
