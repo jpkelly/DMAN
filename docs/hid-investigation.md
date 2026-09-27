@@ -220,3 +220,32 @@ Conclusion: no user-space path found to avoid the hang on macOS. Remaining
 macOS route: a kernel-level descriptor override (`kUSBDescriptorOverride`, as
 Apple's AppleUSBHostMergeProperties uses for the built-in iSight) replacing the
 configuration descriptor's `iInterface` 92 with 0, so macOS never requests it.
+
+### USB packet capture of enumeration (2026-09-27 09:50 local)
+
+Passive capture with macOS's USB capture interfaces (`tcpdump -i XHC0`; all
+three controllers recorded, the hub is on XHC0) across an owner replug, RJ45
+connected, controller counting down. File `inventories/usbcap-2026-09-27-XHC0.pcap`,
+read with [tools/usb_pcap.py](../tools/usb_pcap.py) (filter on `83 04 1a 10`).
+The dongle has USB address 4 on that controller.
+
+| t (s) | Request | Result |
+| --- | --- | --- |
+| 28.1067 | GET_DESCRIPTOR device | answered (live, not cached) |
+| 28.1067–.1077 | Strings 2, 1, 3 (length-2 probe, then full) | answered |
+| 28.1079–.1081 | GET_DESCRIPTOR configuration (9, then 34 bytes; `iInterface` = `5C`) | answered |
+| 28.1126 | SET_CONFIGURATION 1 | ok |
+| 28.1128 | GET_DESCRIPTOR string `0x5C`, wLength 2 — 64 µs after SET_CONFIGURATION | **timeout (5.06 s)** |
+| 33.18–36.57 | SET_FEATURE DEVICE_REMOTE_WAKEUP ×3 | timeout |
+| 36.68–67.54 | GET_DESCRIPTOR HID report (47 bytes) ×6 | timeout each |
+
+Nothing from the dongle after that; macOS never polled interrupt-IN. This
+confirms at transaction level that the device answers everything until the
+string-92 request and nothing afterwards. The capture cannot separate "bogus
+index" from "any request 64 µs after SET_CONFIGURATION"; both are avoided if
+macOS never issues that request (descriptor override).
+
+The owner reported the RJ45-side LED **on, solid** after this replug (it had
+stayed off after the 09:37 and 09:42 replugs). Its cause is unknown.
+Note: the capture wrapper's `pkill -f 'tcpdump -i XHC'` matched its own shell;
+the leftover root tcpdump processes were stopped explicitly afterwards.
