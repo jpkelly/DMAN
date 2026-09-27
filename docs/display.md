@@ -271,3 +271,8 @@ to the cue view while confidence still displayed its timer and cue overlay.
 The checks used the existing output URL, demonstrating that its older appearance
 parameters no longer override shared settings. Test presentation changes were
 restored afterward. All 83 tests and Python/JavaScript syntax checks passed locally.
+
+UI simplification: the explanatory banner, routine synchronization message and
+Minimal display checkbox have been removed from the settings panel. Clean video
+presentation is the default. The underlying saved minimal preference remains
+compatible with existing settings, while save errors appear only when needed.

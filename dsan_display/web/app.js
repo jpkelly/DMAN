@@ -33,7 +33,8 @@ function receiveVideoSettings(video){
     if(element.type==='checkbox') element.checked=video.settings[key];
     else element.value=video.settings[key];
   }
-  $('video-settings-status').textContent='Video output settings synced';
+  $('video-settings-status').textContent='';
+  $('video-settings-status').hidden=true;
 }
 function changeVideoSetting(id){
   const element=$(id), key=videoFields[id];
@@ -41,7 +42,7 @@ function changeVideoSetting(id){
   if(['timerSize','cueSize'].includes(key)) value=sizePercent(value);
   if(key==='warning') value=Math.max(0,Math.min(3600,Math.round(Number(value)||0)));
   pendingVideoChanges[key]=value;
-  $('video-settings-status').textContent='Updating video output…';
+  $('video-settings-status').hidden=true;
   clearTimeout(videoSaveTimer);
   videoSaveTimer=setTimeout(flushVideoSettings,120);
   render();
@@ -59,6 +60,7 @@ async function flushVideoSettings(){
   }catch(error){
     pendingVideoChanges={...changes,...pendingVideoChanges};
     $('video-settings-status').textContent='Video update not saved; retrying. '+error.message;
+    $('video-settings-status').hidden=false;
     retryDelay=1000;
   }finally{
     videoSaving=false;

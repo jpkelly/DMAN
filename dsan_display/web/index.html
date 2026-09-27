@@ -18,10 +18,8 @@
 </main>
 <footer>
   <details><summary>Video output settings</summary><div class="panel">
-    <p>These settings update all open video outputs live. The confidence display keeps its standard layout.</p>
-    <p id="video-settings-status" role="status">Connecting to video settings…</p>
-    <label><input id="minimal" type="checkbox"> Minimal display — timer and cues only</label>
-    <p>Hides routine labels and idle cue text. Connection, stale-data and replay warnings remain visible.</p>
+    <p id="video-settings-status" role="status" hidden></p>
+    <input id="minimal" type="checkbox" hidden aria-hidden="true">
     <label>Timer size <input id="timer-size" type="range" min="50" max="150" step="5" value="100"><output id="timer-size-value" for="timer-size">100%</output></label>
     <label>Cue size <input id="cue-size" type="range" min="50" max="150" step="5" value="100"><output id="cue-size-value" for="cue-size">100%</output></label>
     <p>Sizes are relative to the default video layout. Oversized combinations scale to fit the output screen.</p>
