@@ -66,6 +66,8 @@ def parser():
     for key in ("vid", "pid", "bus", "address", "interface", "endpoint"):
         s.add_argument("--" + key, type=number, required=True)
     s.add_argument("--read-timeout-ms", type=positive, default=100, help="USB input wait, 1–5000 ms; no device settings changed")
+    s.add_argument("--send-limitimer-init", action="store_true", help="OPT-IN OUTPUT: send one 8D 00 HID output report to this device only, after reading has started")
+    s.add_argument("--init-after", type=nonnegative, default=2, help="Seconds of receive-only baseline before the output (default 2)")
     d = sub.add_parser("annotate", help="Append a separate note without modifying acquisition data")
     d.add_argument("session")
     d.add_argument("text")
@@ -82,8 +84,12 @@ def capture(args):
     from .transport import HidReceiver, SerialReceiver, UsbReceiver
     if Path(args.out).exists():
         raise FileExistsError("Session directory already exists; choose a new name")
+    from .init_output import limitimer_init_request, send
+    init = limitimer_init_request(args.interface) if getattr(args, "send_limitimer_init", False) else None
+    if init:
+        print(f"OUTPUT ENABLED: will send one SET_REPORT {init['bmRequestType']:#04x}/{init['bRequest']:#04x} wValue={init['wValue']:#06x} wIndex={init['wIndex']} data={init['data'].hex(' ')}", flush=True)
     snapshot = inventory()
-    session = SessionWriter(args.out, {"label": args.label, "timer_model": args.timer_model, "signal_path": args.signal_path, "inventory": snapshot, "requested_settings": vars(args), "receive_only": True})
+    session = SessionWriter(args.out, {"label": args.label, "timer_model": args.timer_model, "signal_path": args.signal_path, "inventory": snapshot, "requested_settings": vars(args), "receive_only": init is None})
     receiver = None
     reason = "duration"
     summary = {"interface_opened": False, "reads_with_data": 0, "empty_reads": 0}
@@ -98,10 +104,24 @@ def capture(args):
         summary["interface_opened"] = True
         save_json(Path(args.out) / "connection.json", {"device": receiver.info, "settings": receiver.settings})
         session.event("connected")
-        print("Receiving only. Ctrl-C stops. No decoder is active.", flush=True)
+        print("Receiving only. Ctrl-C stops. No decoder is active." if init is None else "Receiving; one output pending. Ctrl-C stops. No decoder is active.", flush=True)
         started = time.monotonic()
         next_status = started + 2
         while not args.seconds or time.monotonic() - started < args.seconds:
+            reads = summary["reads_with_data"] + summary["empty_reads"]
+            if init and reads and time.monotonic() - started >= args.init_after:
+                # Reading has already started, as in the vendor reader-before-write order.
+                fields = {"bmRequestType": init["bmRequestType"], "bRequest": init["bRequest"], "wValue": init["wValue"], "wIndex": init["wIndex"], "data_hex": init["data"].hex()}
+                session.event("tx-request", target={"bus": args.bus, "address": args.address, "interface": args.interface}, **fields)
+                try:
+                    written = send(receiver.device, init)
+                    session.event("tx-result", written=written)
+                    print(f"{utc_now()} TX sent; device accepted {written} bytes", flush=True)
+                except Exception as exc:
+                    # Record and keep receiving; never retry or try other messages.
+                    session.event("tx-result", error=f"{type(exc).__name__}: {exc}")
+                    print(f"{utc_now()} TX failed: {exc}", flush=True)
+                init = None
             data = receiver.read()
             # Timestamp immediately after read, before disk IO or terminal output.
             timestamp = utc_now()
