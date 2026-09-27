@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-let sources = [], requestFailed = false, hideTimer;
+let sources = [], requestFailed = false, hideTimer, layoutInitialized=false, displayedSourceId=null;
 const preferences = (() => {try{return JSON.parse(localStorage.getItem('dsan-display') || '{}');}catch{return {};}})();
 const outputMode = document.body.classList.contains('output');
 const outputParams = new URLSearchParams(location.search);
@@ -12,13 +12,43 @@ if(outputMode){
   if(outputParams.has('warning')) preferences.warning=Number(outputParams.get('warning'));
   if(outputParams.has('overtime')) preferences.overtime=outputParams.get('overtime')==='1';
   if(outputParams.has('minimal')) preferences.minimal=outputParams.get('minimal')==='1';
+  if(outputParams.has('timerSize')) preferences.timerSize=outputParams.get('timerSize');
+  if(outputParams.has('cueSize')) preferences.cueSize=outputParams.get('cueSize');
+  if(outputParams.has('display')) preferences.displayMode=outputParams.get('display');
 }
+$('display-mode').value=['timer','cue','both'].includes(preferences.displayMode)?preferences.displayMode:'both';
 $('program').value = preferences.program || 'active';
 $('warning').value = Number.isFinite(preferences.warning) ? preferences.warning : 30;
 $('overtime').checked = !!preferences.overtime;
 $('minimal').checked = !!preferences.minimal;
+function sizePercent(value){const n=Number(value);return value==null || value==='' || !Number.isFinite(n) ? 100 : Math.max(50,Math.min(150,n));}
+$('timer-size').value=sizePercent(preferences.timerSize);
+$('cue-size').value=sizePercent(preferences.cueSize);
 document.body.classList.toggle('minimal', $('minimal').checked);
-function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,warning:Number($('warning').value),overtime:$('overtime').checked,minimal:$('minimal').checked}));}catch{}}
+function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,warning:Number($('warning').value),overtime:$('overtime').checked,minimal:$('minimal').checked,timerSize:Number($('timer-size').value),cueSize:Number($('cue-size').value),displayMode:$('display-mode').value}));}catch{}}
+function applySizes(){
+  const clock=$('clock'), cue=$('cue-signal'), monitor=$('monitor');
+  const timerScale=sizePercent($('timer-size').value)/100, cueScale=sizePercent($('cue-size').value)/100;
+  $('timer-size-value').textContent=`${Math.round(timerScale*100)}%`;
+  $('cue-size-value').textContent=`${Math.round(cueScale*100)}%`;
+  clock.style.fontSize=''; cue.style.fontSize=''; cue.style.minHeight='';
+  const clockSize=parseFloat(getComputedStyle(clock).fontSize)*(monitor.classList.contains('cue-display')?cueScale:timerScale);
+  const cueHeight=parseFloat(getComputedStyle(cue).minHeight)*cueScale;
+  const cueFont=parseFloat(getComputedStyle(cue).fontSize)*cueScale;
+  const setSizes=fit=>{clock.style.fontSize=`${clockSize*fit}px`;cue.style.fontSize=`${cueFont*fit}px`;cue.style.minHeight=`${cueHeight*fit}px`;};
+  setSizes(1);
+  const style=getComputedStyle(monitor), width=monitor.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+  const children=[...monitor.children].filter(el=>getComputedStyle(el).display!=='none');
+  const widest=Math.max(1,...children.map(el=>el.scrollWidth));
+  let fit=Math.min(1,width/widest);
+  if(outputMode || document.fullscreenElement){
+    const height=innerHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
+    const total=children.reduce((sum,el)=>{const s=getComputedStyle(el);return sum+el.getBoundingClientRect().height+parseFloat(s.marginTop)+parseFloat(s.marginBottom);},0);
+    const scalable=clock.getBoundingClientRect().height+($('cue-overlay').hidden?0:cue.getBoundingClientRect().height);
+    if(scalable>0) fit=Math.min(fit,Math.max(0.1,(height-(total-scalable))/scalable));
+  }
+  setSizes(fit);
+}
 function cueText(source){
   if(requestFailed || source.status==='disconnected') return 'DISCONNECTED';
   if(source.status==='ended') return 'REPLAY ENDED';
@@ -35,26 +65,34 @@ function format(seconds, minutesSeconds){
 }
 function render(){
   document.body.classList.toggle('minimal', $('minimal').checked);
-  const source = sources.find(s => s.id === $('source').value);
+  const mode=$('display-mode').value;
+  const overlay=sources.find(s=>s.id===$('cue-source').value && s.role==='perfectcue');
+  const source=mode==='cue'?overlay:sources.find(s=>s.id===$('source').value && s.role!=='perfectcue');
+  displayedSourceId=source?.id || null;
+  $('source').disabled=$('program').disabled=$('warning').disabled=$('overtime').disabled=$('timer-size').disabled=mode==='cue';
+  $('cue-source').disabled=$('cue-size').disabled=mode==='timer';
   if (!source){
     $('monitor').className='stale';
-    $('status').textContent='SOURCE UNAVAILABLE';
-    $('message').textContent='Configured source missing · last value is not advancing';
+    $('clock').textContent='--:--';
+    $('clock').dataset.idle='false';
+    $('clock').dataset.cue='';
+    $('clock').removeAttribute('aria-label');
+    $('status').textContent=mode==='cue'?'CUE SOURCE UNAVAILABLE':'TIMER SOURCE UNAVAILABLE';
+    $('message').textContent='Select the required source in the operator view';
     $('cue-overlay').hidden=true;
+    $('restart').hidden=true;
+    applySizes();
     return;
   }
-  const isCue = source.role === 'perfectcue';
-  $('program').disabled = isCue;
-  $('warning').disabled = $('overtime').disabled = isCue;
-  const overlay = sources.find(s => s.id === $('cue-source').value && s.role === 'perfectcue');
-  $('cue-overlay').hidden = !overlay || isCue;
+  const isCue = mode==='cue';
+  $('cue-overlay').hidden = mode!=='both';
   if(overlay){
     $('cue-signal').textContent=cueText(overlay);
     $('cue-signal').dataset.cue=cueDirection(overlay);
     $('cue-signal').dataset.idle=String(cueIdle(overlay));
     $('cue-signal').setAttribute('aria-label',cueDirection(overlay) || cueText(overlay));
     $('cue-caption').textContent=`${overlay.label} · Emulator tested · Real PerfectCue untested · Local 1 s hold`;
-  }else if(outputMode && preferences.cueSource && !isCue){
+  }else if(mode==='both'){
     $('cue-overlay').hidden=false;
     $('cue-signal').textContent='CUE SOURCE UNAVAILABLE';
     $('cue-signal').dataset.cue='';
@@ -120,14 +158,22 @@ function render(){
       source.error ? `Error: ${source.error}` : ''
     ].filter(Boolean).join('\n');
   }
+  applySizes();
 }
 function updateOptions(){
-  const old = $('source').value || preferences.source;
-  if ([...$('source').options].map(o=>o.value).join() !== sources.map(s=>s.id).join()){
-    $('source').replaceChildren(...sources.map(s=>new Option(s.label+(s.role==='perfectcue'?' · PerfectCue':' · Limitimer')+(s.kind==='replay'?' · Replay':''),s.id)));
-    if (sources.some(s=>s.id===old)) $('source').value=old;
+  const timers=sources.filter(s=>s.role!=='perfectcue');
+  const cues=sources.filter(s=>s.role==='perfectcue');
+  const legacyCue=sources.find(s=>s.id===preferences.source && s.role==='perfectcue');
+  if(!layoutInitialized && sources.length){
+    if(!['timer','cue','both'].includes(preferences.displayMode)) $('display-mode').value=legacyCue || !timers.length?'cue':cues.length?'both':'timer';
+    if(legacyCue && !preferences.cueSource) preferences.cueSource=legacyCue.id;
+    layoutInitialized=true;
   }
-  const cues = sources.filter(s=>s.role==='perfectcue');
+  const old = $('source').value || preferences.source;
+  if ([...$('source').options].map(o=>o.value).join() !== timers.map(s=>s.id).join()){
+    $('source').replaceChildren(...timers.map(s=>new Option(s.label+(s.kind==='replay'?' · Replay':''),s.id)));
+    if (timers.some(s=>s.id===old)) $('source').value=old;
+  }
   const oldCue = $('cue-source').value || preferences.cueSource;
   if([...$('cue-source').options].slice(1).map(o=>o.value).join() !== cues.map(s=>s.id).join()){
     $('cue-source').replaceChildren(new Option('None',''),...cues.map(s=>new Option(s.label,s.id)));
@@ -146,15 +192,17 @@ async function poll(){
   }catch{requestFailed=true;render();}
   setTimeout(poll,200);
 }
-for(const id of ['source','cue-source','program','warning','overtime','minimal']) $(id).addEventListener('change',()=>{save();render();});
+for(const id of ['source','cue-source','program','warning','overtime','minimal','display-mode']) $(id).addEventListener('change',()=>{save();render();});
+for(const id of ['timer-size','cue-size']) $(id).addEventListener('input',()=>{save();render();});
+window.addEventListener('resize',render);
 $('open-output').addEventListener('click',()=>{
   const url=new URL('/output',location.origin);
-  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value,warning:$('warning').value,overtime:$('overtime').checked?'1':'0',minimal:$('minimal').checked?'1':'0'}).toString();
+  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value,warning:$('warning').value,overtime:$('overtime').checked?'1':'0',minimal:$('minimal').checked?'1':'0',timerSize:$('timer-size').value,cueSize:$('cue-size').value,display:$('display-mode').value}).toString();
   window.open(url.toString(),'_blank','noopener');
 });
 $('restart').addEventListener('click',async()=>{
   $('restart').disabled=true;
-  try{await fetch('/api/restart-replay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:$('source').value})});}
+  try{await fetch('/api/restart-replay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:displayedSourceId})});}
   finally{$('restart').disabled=false;}
 });
 async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.body.requestFullscreen();}catch{$('message').textContent='Use your browser’s fullscreen command';}}

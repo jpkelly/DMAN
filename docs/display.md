@@ -175,3 +175,22 @@ Browser verification: routine text and idle cue text were hidden, a live Next
 triangle remained visible, and injected stale-timer/disconnected-cue snapshots
 still displayed their warnings. The temporary browser response override was
 removed afterward. JavaScript syntax and editor checks passed.
+
+### Layout and size controls
+
+The **Display** selector offers **Timer only**, **Cues only**, or **Both**. Timer
+and cue sources are selected separately; controls for a hidden component are
+inactive. Cue-only replay restarts the selected cue source. A missing required
+source is reported explicitly instead of displaying a different source.
+
+**Display settings** includes independent **Timer size** and **Cue size** sliders
+from 50% to 150% of the default layout. Percentages are saved locally. Output URLs
+include `display=timer|cue|both`, `timerSize` and `cueSize`, so existing output
+windows retain their layout and sizes. Open a new video output to apply a new
+preset. Oversized fullscreen/video combinations are scaled down proportionally
+to fit the viewport; relative timer/cue sizing is retained. The cue's reserved
+space scales along with its triangle, keeping the countdown steady between cues.
+
+Browser checks covered all three layouts, disabled irrelevant controls, persisted
+sliders, independent output URL values and the 150%/150% combination fitting at
+1920×1080. JavaScript syntax and editor diagnostics checks passed.
