@@ -6,7 +6,7 @@
       "type": "process",
       "command": "${workspaceFolder}/.venv/bin/python",
       "windows": {"command": "${workspaceFolder}/.venv/Scripts/python.exe"},
-      "args": ["-m", "compileall", "-q", "dsan_capture", "tests"],
+      "args": ["-m", "compileall", "-q", "dsan_capture", "tests", "tools"],
       "group": {"kind": "build", "isDefault": true},
       "problemMatcher": []
     },

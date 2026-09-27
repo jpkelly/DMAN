@@ -37,8 +37,13 @@ This section supersedes conflicting statements in the dated history below.
   concrete, unverified hypothesis, not a demonstrated fix.
 - **Authorization:** hardware access remains receive-only. Sending the
   initialization output requires the owner's explicit, per-test approval.
-- **Not implemented:** initialization output, timer decoder, multi-source
-  manager, reconnect routing, display UI.
+- **Decoding layers (new):** USB report → stream
+  ([hid_stream.py](dsan_capture/hid_stream.py)) and Limitimer framing/state
+  decoding ([limitimer.py](dsan_capture/limitimer.py)). Verified against upstream
+  RS-485 Limitimer captures; our dongle has only produced consistent fragments.
+  See the [protocol notes](docs/limitimer-protocol.md).
+- **Not implemented:** initialization output, live decoding in the CLI,
+  multi-source manager, reconnect routing, display UI.
 - **Not tested:** Windows, Intel macOS, and any real multi-dongle operation.
 
 ## History: verified on this Mac
@@ -266,7 +271,9 @@ python -m unittest discover -s tests -v
 VS Code tasks for these checks are in [tasks.json](.vscode/tasks.json).
 Twenty-three infrastructure tests cover byte preservation, read boundaries,
 corruption/truncation, interrupted sessions, timing, annotations, and transport
-failure. They do not verify DSAN parsing. The actual USB access check can be
+failure. Sixteen decoding tests cover the USB report envelope and Limitimer
+framing/state against upstream capture excerpts and our real fragments; they do
+not verify decoding of our own dongle's stream. The actual USB access check can be
 replayed from [its session directory](captures/initial-access-check/).
 The tests include two synthetic same-product USB sources and isolated close/
 missing-target behavior. USB inventories include port topology where available;
@@ -275,8 +282,10 @@ it is a reconnect hint, not proof of unique physical identity.
 Module boundaries: [discovery](dsan_capture/discovery.py) inventories devices;
 [transport](dsan_capture/transport.py) returns bytes;
 [session](dsan_capture/session.py) records and replays them;
-[CLI](dsan_capture/__main__.py) coordinates user actions. Add framing/decoding,
-timer-state mapping, and rendering as separate layers after verified captures.
+[hid_stream](dsan_capture/hid_stream.py) unwraps USB reports;
+[limitimer](dsan_capture/limitimer.py) frames and decodes the stream;
+[CLI](dsan_capture/__main__.py) coordinates user actions. Timer-state mapping and
+rendering remain separate later layers.
 The eventual display must mark the last value stale on disconnect or data timeout
 and never silently continue a local countdown. Fullscreen, program selection,
 warning/overtime colors, and GUI replay remain later milestones.

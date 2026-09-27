@@ -2,6 +2,7 @@
 
 The first milestone is original discovery/capture/replay infrastructure. No code
 from Clock-8001 or Depili/limitimer was copied, translated, vendored or imported.
+Later decoding work and upstream-derived test fixtures are covered below.
 
 Later offline research statically inspected DSAN's supplied PerfectCue installer
 and its official Limitimer package. No redistribution/incorporation license for
@@ -28,8 +29,24 @@ obligations. Preserve copyright/license/warranty notices, include the license,
 mark modifications and dates, license the derived combined work compatibly, and
 provide corresponding source including build scripts using a compliant source
 supply method. Merely reading documentation or investigating protocol behavior
-does not incorporate the implementation. Decide the intended application license
-before future code reuse; no application license has been chosen for the user.
+does not incorporate the implementation.
+
+**Owner decision (2026-09-27):** embedding GPL-2.0-or-later content is acceptable
+where needed, which means distributing the application under compatible GPL terms.
+Prefer original code where we can do better; upstream concepts and reverse
+engineering may be used freely. Consequently:
+
+- [limitimer.py](../dsan_capture/limitimer.py) and
+  [hid_stream.py](../dsan_capture/hid_stream.py) are original implementations.
+  They use the frame layout and field positions documented by Depili/limitimer
+  (credited in [the protocol notes](limitimer-protocol.md)); no code was copied.
+- [Upstream capture excerpts](../tests/fixtures/upstream-limitimer/README.md) are
+  unmodified byte ranges from Depili/limitimer's captures, used as test fixtures
+  under GPL-2.0-or-later with [its license](licenses/depili-limitimer-LICENSE.txt).
+- If upstream code is later copied or translated, keep its notices, mark changes
+  with dates, and record it here.
+
+A formal application license file has not been added yet.
 
 The additional owner-supplied forks
 [sytem/clock-8001](https://gitlab.com/sytem/clock-8001) and
