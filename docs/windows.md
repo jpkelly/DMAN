@@ -222,3 +222,14 @@ Use the network URL printed in the console from another laptop/tablet. The local
 URL continues to work. `DSANDisplay.exe --host 127.0.0.1` restricts the app to the
 local PC. See [LAN access and current scope](display.md#lan-access): no login or
 router forwarding is configured, and display settings remain per browser.
+
+## Live video-output controls
+
+The presentation controls now apply only to video output. **Video layout** selects
+Timer only / Cues only / Both; **Video output settings** changes sizes, minimal
+mode, warning threshold and overtime presentation. Open outputs update live from
+any operator on the trusted LAN. The confidence view retains its standard
+presentation. Appearance is shared across output windows; source/program bindings
+remain individual. Settings persist in `video-settings.json` under the app data
+folder. This supersedes earlier notes saying appearance changes require reopening
+an output or stay local to a browser.

@@ -3,7 +3,7 @@
 <body>
 <header id="controls">
   <div class="brand">DSAN <span>Confidence display</span></div>
-  <label>Display <select id="display-mode" aria-label="Display layout"><option value="both">Both</option><option value="timer">Timer only</option><option value="cue">Cues only</option></select></label>
+  <label>Video layout <select id="display-mode" aria-label="Video output layout"><option value="both">Both</option><option value="timer">Timer only</option><option value="cue">Cues only</option></select></label>
   <label>Timer source <select id="source" aria-label="Timer source"></select></label>
   <label>Cue source <select id="cue-source" aria-label="Cue source"><option value="">None</option></select></label>
   <label>Program <select id="program" aria-label="Timer program"><option value="active">Follow controller</option><option value="0">Program 1</option><option value="1">Program 2</option><option value="2">Program 3</option><option value="3">Program 4 · Session</option></select></label>
@@ -17,15 +17,17 @@
   <aside id="cue-overlay" hidden><div id="cue-signal"></div><div id="cue-caption"></div></aside>
 </main>
 <footer>
-  <details><summary>Display settings</summary><div class="panel">
+  <details><summary>Video output settings</summary><div class="panel">
+    <p>These settings update all open video outputs live. The confidence display keeps its standard layout.</p>
+    <p id="video-settings-status" role="status">Connecting to video settings…</p>
     <label><input id="minimal" type="checkbox"> Minimal display — timer and cues only</label>
     <p>Hides routine labels and idle cue text. Connection, stale-data and replay warnings remain visible.</p>
     <label>Timer size <input id="timer-size" type="range" min="50" max="150" step="5" value="100"><output id="timer-size-value" for="timer-size">100%</output></label>
     <label>Cue size <input id="cue-size" type="range" min="50" max="150" step="5" value="100"><output id="cue-size-value" for="cue-size">100%</output></label>
-    <p>Sizes are relative to the default layout. Video output scales oversized combinations to fit. Open a new video output to use changed settings.</p>
+    <p>Sizes are relative to the default video layout. Oversized combinations scale to fit the output screen.</p>
     <label>Warning threshold <input id="warning" type="number" min="0" max="3600" value="30"> seconds</label>
     <label><input id="overtime" type="checkbox"> Show overtime past zero</label>
-    <p>Local display settings. Zero turns red; a positive remaining time at or below the threshold turns amber. Overtime is a local override of the device’s stop-at-zero behavior.</p>
+    <p>Video presentation rules: zero turns red; a positive remaining time at or below the threshold turns amber. Overtime overrides the device’s stop-at-zero presentation on video only.</p>
   </div></details>
   <details><summary>Connection details</summary><pre id="diagnostics">Waiting…</pre></details>
   <span class="hint">F: fullscreen · Escape: exit</span>

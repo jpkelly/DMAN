@@ -9,12 +9,7 @@ if(outputMode){
   for(const [param,key] of [['source','source'],['cue','cueSource'],['program','program']]){
     if(outputParams.has(param)) preferences[key]=outputParams.get(param);
   }
-  if(outputParams.has('warning')) preferences.warning=Number(outputParams.get('warning'));
-  if(outputParams.has('overtime')) preferences.overtime=outputParams.get('overtime')==='1';
-  if(outputParams.has('minimal')) preferences.minimal=outputParams.get('minimal')==='1';
-  if(outputParams.has('timerSize')) preferences.timerSize=outputParams.get('timerSize');
-  if(outputParams.has('cueSize')) preferences.cueSize=outputParams.get('cueSize');
-  if(outputParams.has('display')) preferences.displayMode=outputParams.get('display');
+
 }
 $('display-mode').value=['timer','cue','both'].includes(preferences.displayMode)?preferences.displayMode:'both';
 $('program').value = preferences.program || 'active';
@@ -24,13 +19,59 @@ $('minimal').checked = !!preferences.minimal;
 function sizePercent(value){const n=Number(value);return value==null || value==='' || !Number.isFinite(n) ? 100 : Math.max(50,Math.min(150,n));}
 $('timer-size').value=sizePercent(preferences.timerSize);
 $('cue-size').value=sizePercent(preferences.cueSize);
-document.body.classList.toggle('minimal', $('minimal').checked);
-function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,warning:Number($('warning').value),overtime:$('overtime').checked,minimal:$('minimal').checked,timerSize:Number($('timer-size').value),cueSize:Number($('cue-size').value),displayMode:$('display-mode').value}));}catch{}}
+document.body.classList.toggle('minimal', outputMode && $('minimal').checked);
+function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value}));}catch{}}
+let videoReady=false, videoRevision=-1, videoSaving=false, pendingVideoChanges={}, videoSaveTimer;
+const videoFields={'display-mode':'displayMode',minimal:'minimal','timer-size':'timerSize','cue-size':'cueSize',warning:'warning',overtime:'overtime'};
+function receiveVideoSettings(video){
+  if(!video || !video.settings || videoSaving || Object.keys(pendingVideoChanges).length) return;
+  videoReady=true;
+  if(video.revision<=videoRevision) return;
+  videoRevision=video.revision;
+  for(const [id,key] of Object.entries(videoFields)){
+    const element=$(id);
+    if(element.type==='checkbox') element.checked=video.settings[key];
+    else element.value=video.settings[key];
+  }
+  $('video-settings-status').textContent='Video output settings synced';
+}
+function changeVideoSetting(id){
+  const element=$(id), key=videoFields[id];
+  let value=element.type==='checkbox'?element.checked:element.value;
+  if(['timerSize','cueSize'].includes(key)) value=sizePercent(value);
+  if(key==='warning') value=Math.max(0,Math.min(3600,Math.round(Number(value)||0)));
+  pendingVideoChanges[key]=value;
+  $('video-settings-status').textContent='Updating video output…';
+  clearTimeout(videoSaveTimer);
+  videoSaveTimer=setTimeout(flushVideoSettings,120);
+  render();
+}
+async function flushVideoSettings(){
+  if(videoSaving || !Object.keys(pendingVideoChanges).length) return;
+  const changes=pendingVideoChanges; pendingVideoChanges={}; videoSaving=true;
+  let retryDelay=0;
+  try{
+    const response=await fetch('/api/video-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(changes),signal:AbortSignal.timeout(3000)});
+    const result=await response.json();
+    if(!response.ok) throw new Error(result.error || 'Update failed');
+    videoSaving=false;
+    receiveVideoSettings(result);
+  }catch(error){
+    pendingVideoChanges={...changes,...pendingVideoChanges};
+    $('video-settings-status').textContent='Video update not saved; retrying. '+error.message;
+    retryDelay=1000;
+  }finally{
+    videoSaving=false;
+    if(Object.keys(pendingVideoChanges).length) videoSaveTimer=setTimeout(flushVideoSettings,retryDelay);
+  }
+}
+
 function applySizes(){
   const clock=$('clock'), cue=$('cue-signal'), monitor=$('monitor');
-  const timerScale=sizePercent($('timer-size').value)/100, cueScale=sizePercent($('cue-size').value)/100;
-  $('timer-size-value').textContent=`${Math.round(timerScale*100)}%`;
-  $('cue-size-value').textContent=`${Math.round(cueScale*100)}%`;
+  const timerPercent=sizePercent($('timer-size').value), cuePercent=sizePercent($('cue-size').value);
+  const timerScale=outputMode?timerPercent/100:1, cueScale=outputMode?cuePercent/100:1;
+  $('timer-size-value').textContent=`${timerPercent}%`;
+  $('cue-size-value').textContent=`${cuePercent}%`;
   clock.style.fontSize=''; cue.style.fontSize=''; cue.style.minHeight='';
   const clockSize=parseFloat(getComputedStyle(clock).fontSize)*(monitor.classList.contains('cue-display')?cueScale:timerScale);
   const cueHeight=parseFloat(getComputedStyle(cue).minHeight)*cueScale;
@@ -90,14 +131,19 @@ function renderConnections(){
   ].filter(Boolean).join('\n\n');
 }
 function render(){
-  document.body.classList.toggle('minimal', $('minimal').checked);
+  document.body.classList.toggle('minimal', outputMode && $('minimal').checked);
   renderConnections();
-  const mode=$('display-mode').value;
+  const videoMode=$('display-mode').value;
   const overlay=sources.find(s=>s.id===$('cue-source').value && s.role==='perfectcue');
-  const source=mode==='cue'?overlay:sources.find(s=>s.id===$('source').value && s.role!=='perfectcue');
+  const timer=sources.find(s=>s.id===$('source').value && s.role!=='perfectcue');
+  const mode=outputMode?videoMode:(timer?(overlay?'both':'timer'):(overlay?'cue':'timer'));
+  const source=mode==='cue'?overlay:timer;
   displayedSourceId=source?.id || null;
-  $('source').disabled=$('program').disabled=$('warning').disabled=$('overtime').disabled=$('timer-size').disabled=mode==='cue';
-  $('cue-source').disabled=$('cue-size').disabled=mode==='timer';
+  $('source').disabled=$('program').disabled=videoMode==='cue';
+  $('cue-source').disabled=videoMode==='timer';
+  $('warning').disabled=$('overtime').disabled=$('timer-size').disabled=!videoReady || videoMode==='cue';
+  $('cue-size').disabled=!videoReady || videoMode==='timer';
+  $('minimal').disabled=$('display-mode').disabled=!videoReady;
   if (!source){
     $('monitor').className='stale';
     $('clock').textContent='--:--';
@@ -130,13 +176,13 @@ function render(){
   const index = $('program').value === 'active' ? source.selected : Number($('program').value);
   const program = source.programs[index];
   const stale = requestFailed || !source.fresh;
-  const seconds = program ? ($('overtime').checked ? program.raw_seconds : program.seconds) : null;
+  const seconds = program ? (outputMode && $('overtime').checked ? program.raw_seconds : program.seconds) : null;
   const classes = [];
   if (source.kind === 'replay') classes.push('replay');
   if (stale) classes.push('stale');
   if (program && !program.running) classes.push('paused');
   if (seconds !== null && seconds <= 0) classes.push('expired');
-  else if (seconds !== null && seconds <= Math.max(0,Number($('warning').value)||0)) classes.push('warning');
+  else if (seconds !== null && seconds <= (outputMode?Math.max(0,Number($('warning').value)||0):30)) classes.push('warning');
   $('monitor').className = classes.join(' ');
   $('source-name').textContent = source.label;
   $('program-name').textContent = index == null ? '' : `Program ${index+1}${$('program').value==='active'?' · Follow controller':''}`;
@@ -199,16 +245,17 @@ async function poll(){
   try{
     const response=await fetch('/api/state',{cache:'no-store',signal:AbortSignal.timeout(1500)});
     if(!response.ok) throw new Error('State request failed');
-    sources=(await response.json()).sources;requestFailed=false;updateOptions();render();
+    const state=await response.json();
+    sources=state.sources;requestFailed=false;updateOptions();receiveVideoSettings(state.video);render();
   }catch{requestFailed=true;render();}
   setTimeout(poll,200);
 }
-for(const id of ['source','cue-source','program','warning','overtime','minimal','display-mode']) $(id).addEventListener('change',()=>{save();render();});
-for(const id of ['timer-size','cue-size']) $(id).addEventListener('input',()=>{save();render();});
+for(const id of ['source','cue-source','program']) $(id).addEventListener('change',()=>{save();render();});
+for(const id of Object.keys(videoFields)) $(id).addEventListener($(id).type==='range'?'input':'change',()=>changeVideoSetting(id));
 window.addEventListener('resize',render);
 $('open-output').addEventListener('click',()=>{
   const url=new URL('/output',location.origin);
-  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value,warning:$('warning').value,overtime:$('overtime').checked?'1':'0',minimal:$('minimal').checked?'1':'0',timerSize:$('timer-size').value,cueSize:$('cue-size').value,display:$('display-mode').value}).toString();
+  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value}).toString();
   window.open(url.toString(),'_blank','noopener');
 });
 $('restart').addEventListener('click',async()=>{

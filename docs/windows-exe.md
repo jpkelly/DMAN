@@ -115,3 +115,14 @@ change firewall rules. Use `--host 127.0.0.1` to restrict access to the local PC
 There is no login in this trusted-LAN mode and no router/Internet publishing setup.
 Display preferences still belong to each browser; they do not remotely change
 an already-open output on a different browser.
+
+## Live video-output controls
+
+The presentation controls now apply only to video output. **Video layout** selects
+Timer only / Cues only / Both; **Video output settings** changes sizes, minimal
+mode, warning threshold and overtime presentation. Open outputs update live from
+any operator on the trusted LAN. The confidence view retains its standard
+presentation. Appearance is shared across output windows; source/program bindings
+remain individual. Settings persist in `video-settings.json` under the app data
+folder. This supersedes earlier notes saying appearance changes require reopening
+an output or stay local to a browser.

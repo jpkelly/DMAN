@@ -13,6 +13,7 @@ from .model import Source
 from .workers import Worker
 from dsan_capture.discovery import hid_devices
 from .network import host_allowed, listen_address, local_hostnames, network_addresses
+from .video_settings import VideoSettings
 
 
 class Server(ThreadingHTTPServer):
@@ -23,6 +24,7 @@ class Server(ThreadingHTTPServer):
         self.dual_stack = dual_stack
         super().__init__(address, handler)
         self.allowed_hostnames = local_hostnames()
+        self.video_settings = VideoSettings()
 
     def server_bind(self):
         if self.address_family == socket.AF_INET6 and self.dual_stack:
@@ -61,7 +63,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         path = urlparse(self.path).path
         if path == '/api/state':
-            self.reply({'sources': [w.source.snapshot() for w in self.server.workers.values()]})
+            self.reply({'sources': [w.source.snapshot() for w in self.server.workers.values()],
+                        'video': self.server.video_settings.snapshot()})
             return
         files = {'/': ('index.html', 'text/html; charset=utf-8'),
                  '/output': ('index.html', 'text/html; charset=utf-8'),
@@ -85,7 +88,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host() or self.headers.get('Origin') != expected:
             self.reply({'error': 'Same-origin request to this server required'}, status=403)
             return
-        if self.path != '/api/restart-replay':
+        if self.path not in ('/api/restart-replay', '/api/video-settings'):
             self.reply({'error': 'Not found'}, status=404)
             return
         try:
@@ -93,12 +96,17 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 1024:
                 raise ValueError('Invalid request size')
             data = json.loads(self.rfile.read(length))
+            if self.path == '/api/video-settings':
+                self.reply(self.server.video_settings.update(data))
+                return
             with self.server.control_lock:
                 worker = self.server.workers[data['id']]
                 worker.restart_replay()
             self.reply({'ok': True})
         except (ValueError, KeyError, TypeError, RuntimeError) as exc:
             self.reply({'error': str(exc)}, status=400)
+        except OSError:
+            self.reply({'error': 'Could not save video settings'}, status=500)
 
 
 def main(argv=None):
@@ -107,6 +115,7 @@ def main(argv=None):
         parser.add_argument('--' + flag, action='append', default=[], metavar='LABEL=TARGET')
     parser.add_argument('--remote-root', default='/home/pi/dsan-investigation')
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--video-settings', type=Path, default=Path('video-settings.json'), help='Persistent shared video presentation settings')
     parser.add_argument('--host', type=listen_address, default='0.0.0.0',
                         help='Listen address; default all interfaces (IPv4 and IPv6 where available). Use 127.0.0.1 for local-only access.')
     parser.add_argument('--list-hid', action='store_true', help='List DSAN HID paths as JSON, without opening a stream')
@@ -157,7 +166,9 @@ def main(argv=None):
         parser.error('--init-hid must identify a selected native HID source')
     if not workers:
         parser.error('Add at least one --replay, --pi or --hid source')
+    video_settings = VideoSettings(args.video_settings)
     server = create_server(args.host, args.port)
+    server.video_settings = video_settings
     server.workers, server.control_lock = workers, threading.Lock()
     for worker in workers.values():
         worker.start()
@@ -175,7 +186,7 @@ def main(argv=None):
         local_name = socket.gethostname().split('.')[0].lower() + '.local'
         print(f'Local-network name: http://{local_name}:{server.server_port} (where local name resolution is available)', flush=True)
     if args.host != '127.0.0.1':
-        print('LAN access enabled. Devices on this network can view the display and restart replay.', flush=True)
+        print('LAN access enabled. Devices on this network can view data, change video settings and restart replay.', flush=True)
     if args.open_browser:
         webbrowser.open(f'http://{browser_host}:{server.server_port}')
     try:

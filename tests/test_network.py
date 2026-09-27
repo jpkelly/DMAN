@@ -45,7 +45,7 @@ class NetworkTests(unittest.TestCase):
                     conn.request('GET', '/api/state')
                     response = conn.getresponse()
                     self.assertEqual(response.status, 200)
-                    self.assertEqual(json.loads(response.read()), {'sources': []})
+                    self.assertEqual(json.loads(response.read())['sources'], [])
                 finally:
                     conn.close()
         finally:

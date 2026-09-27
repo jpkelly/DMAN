@@ -1,3 +1,9 @@
+**Current video-control behavior (supersedes older per-window appearance notes):**
+presentation controls apply only to video output, and update every open output
+live through shared server settings. The confidence view uses its standard layout,
+sizes, labels and status text. Source/program bindings remain per output window.
+See [shared video settings](#shared-video-settings).
+
 # DSAN confidence display
 
 The display runs on the **Mac**, using a local Python server and browser window.
@@ -234,3 +240,34 @@ HTTP 200, with both dongles connected. No network addresses/routes, firewall
 settings or router settings were changed. The Pi has no IPv4 route to the Mac's
 Wi-Fi address, so that was not used as the cross-device test path. Ethernet and
 Wi-Fi are both supported when the client has a route to the server.
+
+## Shared video settings
+
+**Video layout** and **Video output settings** control output appearance only:
+Timer only / Cues only / Both, minimal display, timer/cue sizes, warning threshold
+and overtime presentation. The confidence display keeps a standard readable view
+of its selected timer and cue inputs; these presentation controls do not resize,
+hide or recolor it. Its default warning threshold remains 30 seconds and it follows
+the device's stop-at-zero presentation.
+
+Settings are shared by the application server and saved in `video-settings.json`
+(in the Windows user-data directory for the packaged app). All open `/output`
+views update on their next poll, including when controls are changed from another
+computer over LAN. Other operator pages synchronize as well. The settings panel
+shows whether an update was saved or is waiting to retry. Invalid changes are
+rejected; a failed disk save does not change the running settings.
+
+Output windows still retain their own timer/cue source and program bindings.
+Appearance is now one shared profile across them; older appearance parameters in
+output URLs no longer override it. Use Open video output to create another view
+with the currently selected sources/program. No hardware commands are sent when
+presentation settings change. LAN clients have this control access on the trusted
+network; cross-origin requests remain rejected.
+
+Verification of separation: changing timer size to 50% and cue size to 150%
+changed the already-open video output, while the confidence timer font stayed
+151.5 px and its labels stayed visible. Selecting Cues only switched the output
+to the cue view while confidence still displayed its timer and cue overlay.
+The checks used the existing output URL, demonstrating that its older appearance
+parameters no longer override shared settings. Test presentation changes were
+restored afterward. All 83 tests and Python/JavaScript syntax checks passed locally.
