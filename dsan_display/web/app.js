@@ -22,7 +22,7 @@ function sizePercent(value){const n=Number(value);return value==null || value===
 $('timer-size').value=sizePercent(preferences.timerSize);
 $('cue-size').value=sizePercent(preferences.cueSize);
 document.body.classList.toggle('minimal', outputMode && $('minimal').checked);
-function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,confidenceOvertime:$('confidence-overtime').checked}));}catch{}}
+function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,confidenceOvertime:$('confidence-overtime').checked,outputDisplay:$('output-display').value}));}catch{}}
 let videoReady=false, videoRevision=-1, videoSaving=false, pendingVideoChanges={}, videoSaveTimer;
 const videoFields={'display-mode':'displayMode',minimal:'minimal','timer-size':'timerSize','cue-size':'cueSize',warning:'warning',overtime:'overtime'};
 function receiveVideoSettings(video){
@@ -266,17 +266,69 @@ for(const id of ['source','cue-source','program']) $(id).addEventListener('chang
 $('confidence-overtime').addEventListener('change',()=>{confidenceInitialized=true;save();render();});
 for(const id of Object.keys(videoFields)) $(id).addEventListener($(id).type==='range'?'input':'change',()=>changeVideoSetting(id));
 window.addEventListener('resize',render);
+let screenDetails=null, outputScreens=[];
+function displayWindowStatus(message){$('display-window-status').textContent=message;$('display-window-status').hidden=!message;}
+function refreshDisplays(){
+  const select=$('output-display'), wanted=select.value || preferences.outputDisplay;
+  outputScreens=[...screenDetails.screens];
+  select.replaceChildren(new Option('Current display / move manually',''),...outputScreens.map((screen,index)=>new Option(DsanDisplays.screenLabel(screen,index),DsanDisplays.screenKey(screen))));
+  if(wanted){
+    if(!outputScreens.some(screen=>DsanDisplays.screenKey(screen)===wanted)){
+      select.add(new Option('Previously selected display (unavailable)',wanted));
+      displayWindowStatus('Selected display disconnected. Choose another display before opening output.');
+    }
+    select.value=wanted;
+  }else{
+    const preferred=outputScreens.find(screen=>!screen.isInternal && screen!==screenDetails.currentScreen) || screenDetails.currentScreen;
+    if(preferred) select.value=DsanDisplays.screenKey(preferred);
+  }
+}
+$('choose-display').addEventListener('click',async()=>{
+  try{
+    const details=await window.getScreenDetails();
+    if(screenDetails) screenDetails.removeEventListener('screenschange',refreshDisplays);
+    screenDetails=details;
+    screenDetails.addEventListener('screenschange',refreshDisplays);
+    displayWindowStatus('');
+    refreshDisplays();
+    if(outputScreens.length===1) displayWindowStatus('One display detected on this computer.');
+  }catch(error){displayWindowStatus('Display selection unavailable. Allow window management for this site, or open output and move it manually.');}
+});
+$('output-display').addEventListener('change',()=>{displayWindowStatus('');save();});
+if(!outputMode && (!window.isSecureContext || typeof window.getScreenDetails!=='function')){
+  $('choose-display').disabled=true;
+  displayWindowStatus('To choose a display automatically, open the app locally in Chrome or Edge. Manual placement is available here.');
+}
 $('open-output').addEventListener('click',()=>{
   const url=new URL('/output',location.origin);
-  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value}).toString();
-  window.open(url.toString(),'_blank','noopener');
+  url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value,managed:'1'}).toString();
+  try{
+    DsanDisplays.openOutput(url.toString(),$('output-display').value,outputScreens,window.open.bind(window));
+    save(); displayWindowStatus('');
+  }catch(error){displayWindowStatus(error.message);}
 });
 $('restart').addEventListener('click',async()=>{
   $('restart').disabled=true;
   try{await fetch('/api/restart-replay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:displayedSourceId})});}
   finally{$('restart').disabled=false;}
 });
-async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.body.requestFullscreen();}catch{$('message').textContent='Use your browser’s fullscreen command';}}
+let outputCloser=null;
+async function fullscreen(){
+  try{if(document.fullscreenElement)await document.exitFullscreen();else {await document.body.requestFullscreen();if(outputCloser)outputCloser.markFullscreenEntered();}}
+  catch{if(outputMode){$('output-fullscreen').hidden=false;$('output-window-message').textContent='Click Fullscreen or press F to enter fullscreen. Escape closes this output.';$('output-window-message').hidden=false;}else $('message').textContent='Use your browser’s fullscreen command';}
+}
+if(outputMode){
+  outputCloser=DsanDisplays.installOutputExit(window,document,()=>{
+    $('output-window-message').textContent='This tab cannot close itself. Close it with Ctrl+W (Cmd+W on Mac); use Open video output for Escape-to-close windows.';
+    $('output-window-message').hidden=false;
+  });
+  $('output-fullscreen').addEventListener('click',fullscreen);
+  document.addEventListener('fullscreenchange',()=>{
+    if(document.fullscreenElement){$('output-fullscreen').hidden=true;$('output-window-message').hidden=true;}
+  });
+  if(outputParams.get('managed')==='1') fullscreen();
+}
+
 $('fullscreen').addEventListener('click',fullscreen);
 document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='f'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();fullscreen();}});
 function showControls(){document.body.classList.remove('quiet');clearTimeout(hideTimer);hideTimer=setTimeout(()=>{if(document.fullscreenElement&&!document.querySelector('details[open]'))document.body.classList.add('quiet');},3000);}

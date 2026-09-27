@@ -7,8 +7,14 @@
   <label>Timer source <select id="source" aria-label="Timer source"></select></label>
   <label>Cue source <select id="cue-source" aria-label="Cue source"><option value="">None</option></select></label>
   <label>Program <select id="program" aria-label="Timer program"><option value="active">Follow controller</option><option value="0">Program 1</option><option value="1">Program 2</option><option value="2">Program 3</option><option value="3">Program 4 · Session</option></select></label>
-  <button id="restart" hidden>Replay again</button><button id="fullscreen">Fullscreen</button><button id="open-output">Open video output</button>
+  <button id="restart" hidden>Replay again</button><button id="fullscreen">Fullscreen</button>
+  <button id="choose-display">Choose display</button>
+  <label>Output display <select id="output-display" aria-label="Output display"><option value="">Current display / move manually</option></select></label>
+  <button id="open-output">Open video output</button>
+  <span id="display-window-status" role="status" hidden></span>
 </header>
+<button id="output-fullscreen" hidden>Fullscreen</button>
+<p id="output-window-message" role="status" hidden></p>
 <main id="monitor" class="stale">
   <div class="eyebrow"><span id="source-name">Waiting for source</span><span id="program-name"></span></div>
   <div id="clock" class="clock">--:--</div>
@@ -31,6 +37,6 @@
     <p>Video warning threshold controls amber; zero turns red. These settings apply to video output.</p>
   </div></details>
   <details><summary>Connection details</summary><pre id="diagnostics">Waiting…</pre></details>
-  <span class="hint">F: fullscreen · Escape: exit</span>
+  <span class="hint">F: fullscreen · Escape: exit fullscreen / close video output</span>
 </footer>
-<script src="/app.js"></script></body></html>
+<script src="/display-windows.js"></script><script src="/app.js"></script></body></html>

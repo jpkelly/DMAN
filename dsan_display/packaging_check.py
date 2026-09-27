@@ -27,6 +27,7 @@ def self_test():
     try:
         expected = {'/': b'Open video output', '/output': b'<body class="output">',
                     '/app.js': b'function render()', '/style.css': b'--video-cue-size',
+                    '/display-windows.js': b'installOutputExit',
                     '/api/state': b'"sources": []'}
         for route, marker in expected.items():
             with urlopen(f'http://127.0.0.1:{server.server_port}{route}', timeout=5) as response:

@@ -1,3 +1,7 @@
+**Output window controls:** Choose display selects a monitor attached to the
+browser's computer in supporting browsers. Escape closes an app-opened output
+window, including after fullscreen exits. See [display selection](#display-selection-and-escape).
+
 **Current overtime controls:** confidence and video now have separate checkboxes.
 Confidence overtime is saved per browser; video overtime remains shared across
 video outputs. This supersedes the earlier shared-overtime notes below.
@@ -304,3 +308,44 @@ then confidence on/video off (negative time versus 0:00), with confidence change
 leaving the server's video-settings revision unchanged. Both original enabled
 settings were restored. Confidence persistence survived a page reload. JavaScript
 syntax and editor checks passed.
+
+## Display selection and Escape
+
+On the **local app page in Chrome/Edge**, click **Choose display** and allow the
+browser's window-management permission. The **Output display** list shows the
+browser-provided monitor label, resolution and built-in/external/primary markers.
+Choose one, then **Open video output**. The app opens a separate popup using the
+selected monitor's available desktop bounds, including negative coordinates.
+Selection is saved per browser. Display changes refresh the list; a disconnected
+selection is reported and never silently replaced by a different screen.
+
+The output attempts fullscreen. Browser activation policies may require clicking
+the output's **Fullscreen** button or pressing **F**. **Escape closes the output**;
+when a browser consumes Escape to exit fullscreen, the fullscreen-exit handler
+closes it. The operator page remains open. If an output was manually navigated
+rather than script-opened, browser security may prevent closing it; the page
+then tells the operator to close that tab and use Open video output next time.
+
+Selection uses the browser's [Window Management API](https://developer.chrome.com/docs/capabilities/web-apis/window-management).
+It requires browser support, a secure context (localhost qualifies) and site
+permission. Plain HTTP LAN pages generally cannot use it; manual popup placement
+remains available with an explanatory message. The displays belong to the computer
+running the browser, not a remote DSAN host. No remote OS monitor control, new
+native driver or framework was added. A popup blocker is reported explicitly.
+
+The placement/Escape tests use synthetic display geometry; the current Mac exposes
+one screen. Real Windows multi-monitor placement and fullscreen permission behavior
+still need a physical test. The existing Python tests and packaging smoke check
+also verify that the new browser helper is included in the executable.
+
+Browser verification for the new window controls: an app-opened popup loaded the
+output, automatically entered fullscreen in the current browser, and closed when
+its Escape key handler was dispatched. A separate popup also closed after an
+actual `document.exitFullscreen()` call. The operator remained open. The latter
+check prompted an explicit marker for completed fullscreen requests so a delayed
+fullscreen-change event cannot lose the entry state. These are browser/window
+checks, not a physical Windows monitor-placement test. Nine JavaScript tests and
+all 83 Python tests passed locally. The embedded preview reports window-management
+permission denied; its Choose display action correctly shows a permission/manual
+placement message. Real monitor enumeration must be checked in a supporting
+browser with that permission granted.

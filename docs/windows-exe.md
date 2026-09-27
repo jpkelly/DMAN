@@ -126,3 +126,18 @@ presentation. Appearance is shared across output windows; source/program binding
 remain individual. Settings persist in `video-settings.json` under the app data
 folder. This supersedes earlier notes saying appearance changes require reopening
 an output or stay local to a browser.
+
+## Choosing the output monitor
+
+Open the local operator URL in a browser supporting the Window Management API
+(such as Chrome/Edge). Choose display requests the browser's site permission and
+populates Output display with connected monitor labels and dimensions. Select a
+monitor and open video output. It opens as a separate popup and attempts fullscreen;
+if the browser requires another gesture, click Fullscreen in that output or press
+F. Escape closes the app-opened output window. The confidence page stays open.
+
+This selects displays attached to the browser's machine. Plain HTTP LAN pages
+and unsupported/denied browsers offer manual placement instead. This is not a
+remote host monitor selector. Physical multi-monitor placement on Windows remains
+a hardware check. CI runs synthetic browser-window behavior tests in addition to
+the Python tests and packaged smoke test.
