@@ -1,3 +1,10 @@
+**Latest Windows build:** Private repository https://github.com/jpkelly/DMAN
+is connected as origin. [Run 36349142395](https://github.com/jpkelly/DMAN/actions/runs/36349142395) built
+commit `954e8ae`: 74 tests and frozen executable self-test passed on Windows x64.
+The unsigned executable/package is downloaded under `dist/windows-build-36349142395`.
+SHA-256/PE architecture verified locally. No Windows USB or physical video-output
+test has occurred. Older statements saying no Windows executable exists are historical.
+
 **Latest cue evidence:** the user has no PerfectCue controller box, only an
 emulator alternating every ten seconds. Next/Previous manual-action captures plus
 that clarification establish framed payloads `81 0F 01 00/01 83` on this path.

@@ -85,4 +85,21 @@ Local validation completed: 74 unit tests, Python compilation, the source-mode
 non-Windows guard correctly refused to create an incorrectly labelled executable.
 The pinned PyInstaller 6.22.3 Windows x64 wheel and runtime wheels were downloaded
 successfully; this checks their availability, not Windows installation/execution
-or Windows-only transitive dependencies. The GitHub workflow has not run.
+or Windows-only transitive dependencies. The [first Windows workflow](https://github.com/jpkelly/DMAN/actions/runs/36349142395) subsequently passed: 74 tests,
+PyInstaller build and the frozen self-test succeeded on Windows Server 2022 x64.
+
+## First verified build
+
+[Run 36349142395](https://github.com/jpkelly/DMAN/actions/runs/36349142395) built commit `954e8ae` successfully.
+The downloaded Windows x64 PE executable is 9,664,613 bytes. Its SHA-256 matches
+both the uploaded checksum and embedded build manifest:
+
+```text
+cf27f4aea01e902c88ac61257b3fd1a73c36629f63751fb0cf3b7759b7b00a5a
+```
+
+All 74 tests passed on the Windows runner, followed by the frozen executable's
+no-hardware smoke check. The executable was downloaded and its hash/PE architecture
+verified on the Mac; it was not run on macOS. USB hardware, physical video output
+and real PerfectCue remain untested. Download workflow artifacts while retained
+(14 days), or run the manual workflow again for a fresh package.

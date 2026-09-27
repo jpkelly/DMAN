@@ -21,8 +21,9 @@ DLL, Pi, USB serial adapter, WinUSB replacement or libusb runtime is required by
 this native HID path. Python plus a browser keeps the existing verified decoder
 and display small and portable; there is no new UI framework.
 
-**Status:** implemented for Windows testing, not yet executed on Windows or
-tested with a Windows-connected dongle. The owner confirms prior vendor-software
+**Status:** [Windows build and automated checks passed](https://github.com/jpkelly/DMAN/actions/runs/36349142395), including
+74 tests and the frozen executable smoke check. Physical Windows USB testing
+remains outstanding. The owner confirms prior vendor-software
 operation with this Limitimer dongle. That does not verify our Windows backend.
 The initial setup targets Windows 10/11 x64 with Python 3.13 x64; Windows ARM64
 and standalone executable packaging are not covered by this milestone.
@@ -211,6 +212,5 @@ then distribute the generated ZIP with `DSANDisplay.exe` and license notices.
 The operating machine needs a browser but no Python installation. The packaged
 app keeps settings/logs under `%LOCALAPPDATA%\DSANDisplay`. A manual GitHub Actions
 workflow can also build on a Windows runner after the project is uploaded.
-See [executable build and validation status](windows-exe.md). No Windows binary
-has yet been built in this session; the source packaging check and all 74 tests
-passed on macOS. The existing source-mode launch scripts remain available.
+See [executable build and validation status](windows-exe.md). The first executable has now been built on Windows Server 2022 x64;
+74 tests and the frozen smoke check passed there, with its downloaded SHA-256 verified. The existing source-mode launch scripts remain available.

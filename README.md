@@ -4,7 +4,7 @@
 dongle connected simultaneously.** Each has an explicit role, exact HID path,
 independent initialization and decoder. See [Windows setup](docs/windows.md).
 Limitimer has real controller captures; Next/Previous cue framing has emulator +
-dongle fixtures. Real PerfectCue and Windows execution remain untested. The task
+dongle fixtures. Real PerfectCue and Windows USB hardware remain untested. The task
 **DSAN: mixed dongle preview** reads both connected Pi dongles simultaneously.
 
 The first confidence display is running on macOS, with live Pi USB input and
@@ -13,10 +13,11 @@ confidence display** task is running. See [display setup and limits](docs/displa
 Basic stopped/running/paused/zero/program-selection behavior now has real fixtures;
 direct Mac USB and full production/platform validation remain outstanding.
 
-**Windows executable build prepared:** [build and run instructions](docs/windows-exe.md).
-It bundles Python, native HID support and the browser assets into `DSANDisplay.exe`.
-The build must run on Windows; no exe has been produced here yet. Source-mode
-packaging checks and 74 tests pass on macOS.
+**Windows executable built:** [successful Windows build](https://github.com/jpkelly/DMAN/actions/runs/36349142395) and
+[build/run instructions](docs/windows-exe.md). It bundles Python, native HID support
+and browser assets into `DSANDisplay.exe`. All 74 tests and the frozen application
+smoke check passed on Windows Server 2022 x64. Physical USB/video output and real
+PerfectCue controller testing remain outstanding; this first executable is unsigned.
 
 **Core requirement: multiple dongles at once.** Each display will select an
 independent source and timer program, with separate input, decoding, capture and
