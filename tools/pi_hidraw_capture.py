@@ -31,7 +31,7 @@ def main():
     parser.add_argument("--device", required=True, help="Exact /dev/hidrawN path")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--label", required=True)
-    parser.add_argument("--hardware-role", choices=("limitimer", "perfectcue"), default="limitimer")
+    parser.add_argument("--hardware-role", choices=("unknown", "limitimer", "perfectcue"), default="limitimer")
     parser.add_argument("--controller-model", help="Observed model; do not infer a PerfectCue model")
     parser.add_argument("--signal-path", default="Not recorded")
     parser.add_argument("--seconds", type=int, default=10, choices=range(1, 121), metavar="1..120")
