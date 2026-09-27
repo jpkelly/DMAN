@@ -9,6 +9,7 @@ from pathlib import Path
 
 from dsan_capture.discovery import hid_devices
 from .__main__ import main as display_main
+from .network import listen_address
 
 
 def dsan_devices():
@@ -106,6 +107,8 @@ def main(argv=None):
     parser.add_argument('--data-dir', type=Path, default=default_data_directory(), help='Folder for saved sources and logs')
     parser.add_argument('--config', type=Path, help='Override the saved source configuration path')
     parser.add_argument('--self-test', action='store_true', help='Check bundled imports and web assets without accessing hardware')
+    parser.add_argument('--host', type=listen_address, default='0.0.0.0', help='LAN access by default; use 127.0.0.1 for local-only access')
+    parser.add_argument('--port', type=int, default=8765)
     args = parser.parse_args(argv)
     if args.self_test:
         from .packaging_check import self_test
@@ -129,6 +132,7 @@ def main(argv=None):
         else:
             config = json.loads(args.config.read_text(encoding='utf-8'))
         arguments = launch_arguments(config, devices)
+        arguments += ['--host', args.host, '--port', str(args.port)]
         logging.info('Source configuration: %s', json.dumps(config))
         print('Keep this console open. Ctrl+C stops the display. Diagnostics: ' + str(logfile))
         display_main(arguments)

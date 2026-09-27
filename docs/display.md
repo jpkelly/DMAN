@@ -28,7 +28,7 @@ Use the VS Code task **DSAN: confidence display**, or from the workspace root:
   --replay 'Recorded countdown=captures/pi-p1-running-window'
 ```
 
-Open `http://127.0.0.1:8765` **on the Mac**. The server binds only to localhost.
+Open `http://127.0.0.1:8765` **on the Mac**. The server now listens on all interfaces (IPv4 and IPv6 where supported) by default; see LAN access below.
 Move a browser window onto the confidence monitor and click Fullscreen (or F).
 Escape exits fullscreen; moving the pointer reveals the controls. Browser windows
 can independently choose their source/program. No Internet service is required.
@@ -203,3 +203,34 @@ role, transport, exact device/source path, connection state, report/error counts
 last timer state or cue, and transport errors. Both Pi dongles were verified
 connected with independent increasing counters in this view. Cue idle time is
 reported as time since the last cue, not as an assumed lost heartbeat.
+
+## LAN access
+
+The app now defaults to `--host 0.0.0.0 --port 8765`. The local operator URL stays
+`http://127.0.0.1:8765`; startup also prints detected network addresses. Open
+`http://COMPUTER-LAN-IP:8765/` on another computer/tablet on the same reachable
+network. Output URLs use that same host. The current development Mac is
+`http://10.65.1.56:8765/`; its DHCP address can change. Local machine names are
+accepted too when the client's network resolves them (for example Sapporo.local).
+
+Use `--host 127.0.0.1` for local-only mode, or bind a specific IP interface with
+`--host ADDRESS`. The Windows executable accepts the same `--host` and `--port`
+options. A firewall must permit the app on the intended private network; the app
+does not alter firewall rules, router forwarding, or security settings. No Internet
+hosting or public URL is configured. This mode has no login and is intended for
+a trusted LAN; reachable clients can view state and restart replays. Requests with
+unrecognized Host values and cross-origin replay commands are rejected.
+
+Display settings remain per browser. A remote operator can view live sources and
+open a video view, but changing its sliders/layout does not remotely reconfigure
+an already-open output window on the host. That requires shared output-control
+state, which is not implemented by this network-access change.
+
+LAN validation: all 79 tests passed on macOS, including real HTTP requests,
+IPv4/IPv6 dual-stack access, accepted LAN origins, and rejected foreign origins
+and unknown hosts. The Pi independently fetched `/`, `/output`, JavaScript, CSS
+and live state from the Mac over the existing **wired IPv6 connection**, all
+HTTP 200, with both dongles connected. No network addresses/routes, firewall
+settings or router settings were changed. The Pi has no IPv4 route to the Mac's
+Wi-Fi address, so that was not used as the cross-device test path. Ethernet and
+Wi-Fi are both supported when the client has a route to the server.

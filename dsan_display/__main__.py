@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import json
 import re
+import socket
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -11,10 +12,28 @@ from urllib.parse import urlparse
 from .model import Source
 from .workers import Worker
 from dsan_capture.discovery import hid_devices
+from .network import host_allowed, listen_address, local_hostnames, network_addresses
 
 
 class Server(ThreadingHTTPServer):
     daemon_threads = True
+
+    def __init__(self, address, handler, *, dual_stack=False):
+        self.address_family = socket.AF_INET6 if ':' in address[0] else socket.AF_INET
+        self.dual_stack = dual_stack
+        super().__init__(address, handler)
+        self.allowed_hostnames = local_hostnames()
+
+    def server_bind(self):
+        if self.address_family == socket.AF_INET6 and self.dual_stack:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
+def create_server(host, port):
+    if host in ('0.0.0.0', '::') and socket.has_dualstack_ipv6():
+        return Server(('::', port), Handler, dual_stack=True)
+    return Server((host, port), Handler)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -37,6 +56,9 @@ class Handler(BaseHTTPRequestHandler):
             pass
 
     def do_GET(self):
+        if not self.valid_host():
+            self.reply({'error': 'Unrecognized server address'}, status=403)
+            return
         path = urlparse(self.path).path
         if path == '/api/state':
             self.reply({'sources': [w.source.snapshot() for w in self.server.workers.values()]})
@@ -54,11 +76,14 @@ class Handler(BaseHTTPRequestHandler):
             content = content.replace(b'<body>', b'<body class="output">', 1)
         self.reply(content, content_type)
 
+    def valid_host(self):
+        return host_allowed(self.headers.get('Host', ''), self.server.server_port,
+                            self.connection.getsockname()[0], self.server.allowed_hostnames)
+
     def do_POST(self):
         expected = f'http://{self.headers.get("Host", "")}'
-        allowed_hosts = {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
-        if self.headers.get('Host') not in allowed_hosts or self.headers.get('Origin') != expected:
-            self.reply({'error': 'Local same-origin request required'}, status=403)
+        if not self.valid_host() or self.headers.get('Origin') != expected:
+            self.reply({'error': 'Same-origin request to this server required'}, status=403)
             return
         if self.path != '/api/restart-replay':
             self.reply({'error': 'Not found'}, status=404)
@@ -77,11 +102,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Local DSAN confidence display. Receive-only unless initialization is explicitly enabled.')
+    parser = argparse.ArgumentParser(description='DSAN LAN display. Receive-only unless initialization is explicitly enabled.')
     for flag in ('replay', 'pi', 'hid', 'perfectcue-hid', 'perfectcue-replay', 'perfectcue-pi'):
         parser.add_argument('--' + flag, action='append', default=[], metavar='LABEL=TARGET')
     parser.add_argument('--remote-root', default='/home/pi/dsan-investigation')
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--host', type=listen_address, default='0.0.0.0',
+                        help='Listen address; default all interfaces (IPv4 and IPv6 where available). Use 127.0.0.1 for local-only access.')
     parser.add_argument('--list-hid', action='store_true', help='List DSAN HID paths as JSON, without opening a stream')
     parser.add_argument('--send-limitimer-init', action='store_true', help='Send one reviewed 8D 00 output to EACH selected native HID source; requires Limitimer hardware configuration')
     parser.add_argument('--open-browser', action='store_true')
@@ -130,13 +157,27 @@ def main(argv=None):
         parser.error('--init-hid must identify a selected native HID source')
     if not workers:
         parser.error('Add at least one --replay, --pi or --hid source')
-    server = Server(('127.0.0.1', args.port), Handler)
+    server = create_server(args.host, args.port)
     server.workers, server.control_lock = workers, threading.Lock()
     for worker in workers.values():
         worker.start()
-    print(f'DSAN display: http://127.0.0.1:{server.server_port}', flush=True)
+    browser_host = '127.0.0.1' if args.host in ('0.0.0.0', '::') and server.dual_stack else args.host
+    if browser_host == '0.0.0.0':
+        browser_host = '127.0.0.1'
+    if browser_host == '::':
+        browser_host = '::1'
+    if ':' in browser_host:
+        browser_host = '[' + browser_host + ']'
+    print(f'DSAN display: http://{browser_host}:{server.server_port}', flush=True)
+    if args.host == '0.0.0.0' or server.dual_stack:
+        for address in network_addresses():
+            print(f'Network display: http://{address}:{server.server_port}', flush=True)
+        local_name = socket.gethostname().split('.')[0].lower() + '.local'
+        print(f'Local-network name: http://{local_name}:{server.server_port} (where local name resolution is available)', flush=True)
+    if args.host != '127.0.0.1':
+        print('LAN access enabled. Devices on this network can view the display and restart replay.', flush=True)
     if args.open_browser:
-        webbrowser.open(f'http://127.0.0.1:{server.server_port}')
+        webbrowser.open(f'http://{browser_host}:{server.server_port}')
     try:
         server.serve_forever()
     except KeyboardInterrupt:

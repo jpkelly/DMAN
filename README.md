@@ -19,6 +19,10 @@ and browser assets into `DSANDisplay.exe`. All 74 tests and the frozen applicati
 smoke check passed on Windows Server 2022 x64. Physical USB/video output and real
 PerfectCue controller testing remain outstanding; this first executable is unsigned.
 
+**LAN access:** the GUI now listens on network interfaces by default (IPv4 and
+IPv6 where supported). Startup prints connection URLs; Ethernet or Wi-Fi can be
+used. `--host 127.0.0.1` restores local-only access. See [LAN access and scope](docs/display.md#lan-access).
+
 **Core requirement: multiple dongles at once.** Each display will select an
 independent source and timer program, with separate input, decoding, capture and
 stale-data status. The owner observed conflicts with multiple dongles in the

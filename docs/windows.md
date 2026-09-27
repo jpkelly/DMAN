@@ -214,3 +214,11 @@ app keeps settings/logs under `%LOCALAPPDATA%\DSANDisplay`. A manual GitHub Acti
 workflow can also build on a Windows runner after the project is uploaded.
 See [executable build and validation status](windows-exe.md). The first executable has now been built on Windows Server 2022 x64;
 74 tests and the frozen smoke check passed there, with its downloaded SHA-256 verified. The existing source-mode launch scripts remain available.
+
+## LAN browser access
+
+The server and Windows launcher now default to listening on all interfaces (IPv4 and IPv6 where supported).
+Use the network URL printed in the console from another laptop/tablet. The local
+URL continues to work. `DSANDisplay.exe --host 127.0.0.1` restricts the app to the
+local PC. See [LAN access and current scope](display.md#lan-access): no login or
+router forwarding is configured, and display settings remain per browser.

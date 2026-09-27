@@ -27,6 +27,7 @@ From Command Prompt in the executable folder:
 ```bat
 DSANDisplay.exe --configure
 DSANDisplay.exe --self-test
+DSANDisplay.exe --host 127.0.0.1
 DSANDisplay.exe --data-dir "D:\Show Data\DSAN"
 ```
 
@@ -103,3 +104,14 @@ no-hardware smoke check. The executable was downloaded and its hash/PE architect
 verified on the Mac; it was not run on macOS. USB hardware, physical video output
 and real PerfectCue remain untested. Download workflow artifacts while retained
 (14 days), or run the manual workflow again for a fresh package.
+
+## Access from another device
+
+LAN access is enabled by default. The console prints network URLs such as
+`http://192.168.1.20:8765/`; use the actual URL shown on the Windows machine.
+Other computers/tablets must be on a reachable network and Windows Firewall must
+allow this application on the intended private network. The application does not
+change firewall rules. Use `--host 127.0.0.1` to restrict access to the local PC.
+There is no login in this trusted-LAN mode and no router/Internet publishing setup.
+Display preferences still belong to each browser; they do not remotely change
+an already-open output on a different browser.
