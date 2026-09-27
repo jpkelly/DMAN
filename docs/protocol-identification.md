@@ -66,3 +66,37 @@ or reliably classify a silent/uninitialized device. Automatic startup should
 keep an explicit unknown state, avoid changing modes just to force a match, and
 retain operator-confirmed role bindings. It also cannot repair Windows device
 enumeration conflicts caused by duplicated hardware identifiers.
+
+## USB port-swap trial
+
+The owner unplugged both USB connections, leaving the controller/emulator cables
+and internal settings unchanged, then reconnected the dongles to opposite Pi USB
+ports. While unplugged, the OS listed no DSAN HID devices; both display sources
+became disconnected/stale and their last values and report counts stayed frozen.
+
+After reconnecting, `/dev/hidraw0` was at port `1-1` and `/dev/hidraw1` at `3-1`,
+the reverse physical-port mapping from before. In this insertion sequence the
+hidraw numbers happened to remain associated with the same roles; this does not
+establish stable numbering after other reconnection orders or reboot.
+
+Receive-only 25-second captures, labelled unknown and analyzed after ignoring the
+first second, gave:
+
+- `captures/pi-swap-probe-0`: 257 Limitimer state frames with absent checksums,
+  no cue frames; classified Limitimer without a new initialization command.
+- `captures/pi-swap-probe-1`: 3,008 empty reports in the analyzed interval,
+  no recognized payload; correctly classified unknown.
+
+The second unit's expected role came from the owner's physical swap record, not
+from the empty stream. One previously verified `8D 01` output was then sent only
+to `/dev/hidraw1`, recorded in `captures/pi-swap-cue-init`. The write returned all
+65 API bytes. That capture subsequently contained one Next and one Previous
+message after settling, allowing PerfectCue-framed classification again. No
+Limitimer initialization was sent. All three capture integrity checks passed.
+
+The display workers were explicitly restarted after checking the assignments;
+both sources are connected and receiving independently again. This is not an
+automatic reconnect implementation. The trial confirms that traffic identification
+alone cannot reliably choose the cue startup mode while its stream is empty.
+Keep explicit roles for initialization and use protocol evidence to check them.
+Windows and same-hub behavior remain separate, untested hardware cases.
