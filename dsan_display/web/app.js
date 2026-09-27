@@ -63,8 +63,35 @@ function format(seconds, minutesSeconds){
   if (!minutesSeconds) return negative + String(Math.floor(value / 3600)).padStart(2,'0') + ':' + String(Math.floor(value / 60) % 60).padStart(2,'0');
   return negative + String(Math.floor(value / 60)).padStart(1,'0') + ':' + String(value % 60).padStart(2,'0');
 }
+function renderConnections(){
+  const describe=source=>{
+    const cue=source.role==='perfectcue';
+    const selected=[];
+    if(source.id===$('source').value) selected.push('selected timer');
+    if(source.id===$('cue-source').value) selected.push('selected cue');
+    const transport={pi:'Pi USB via SSH',hid:'Native USB HID',replay:'Recorded replay'}[source.kind] || source.kind;
+    return [
+      `${source.label} · ${cue?'PerfectCue':'Limitimer'} · ${transport}`,
+      selected.length?`Selection: ${selected.join(', ')}`:'Selection: not selected for this view',
+      `Connection: ${requestFailed?'DISPLAY SERVER UNREACHABLE (last known: '+source.status+')':source.status}`,
+      `Device / source path: ${source.target}`,
+      `Reports: ${source.reports} · Rejected: ${source.rejected}`,
+      cue?`Decoded cues: ${source.cue_sequence} · Last cue: ${source.cue || 'none'}`:`Timer frames: ${source.states} · Data: ${source.fresh?'fresh':'stale / unavailable'}`,
+      `Last ${cue?'cue':'timer state'}: ${source.age===null?'never':source.age.toFixed(1)+' s ago'}`,
+      cue?`Unknown cue bytes: ${source.unknown_cue_bytes} · Last raw report: ${source.last_report_hex || 'none'}`:`Checksum: ${source.checksum || 'not available'}`,
+      cue?'Cue mapping: emulator + dongle tested; real PerfectCue and Blank untested. Silence is not a heartbeat.':'Time advances only on received state.',
+      source.error?`Error: ${source.error}`:''
+    ].filter(Boolean).join('\n');
+  };
+  const live=sources.filter(s=>s.kind!=='replay'), replays=sources.filter(s=>s.kind==='replay');
+  $('diagnostics').textContent=[
+    `LIVE CONNECTIONS (${live.length})`,live.map(describe).join('\n\n') || 'No live sources configured.',
+    replays.length?`REPLAY SOURCES (${replays.length})\n${replays.map(describe).join('\n\n')}`:''
+  ].filter(Boolean).join('\n\n');
+}
 function render(){
   document.body.classList.toggle('minimal', $('minimal').checked);
+  renderConnections();
   const mode=$('display-mode').value;
   const overlay=sources.find(s=>s.id===$('cue-source').value && s.role==='perfectcue');
   const source=mode==='cue'?overlay:sources.find(s=>s.id===$('source').value && s.role!=='perfectcue');
@@ -131,14 +158,6 @@ function render(){
   $('status').textContent = status;
   $('message').textContent = message;
   $('restart').hidden = source.kind !== 'replay';
-  $('diagnostics').textContent = [
-    `Source: ${source.label} (${source.kind}, ${source.role || 'limitimer'})`, `Target: ${source.target}`,
-    `State: ${source.status}`, `Last state received: ${source.age===null?'never':source.age.toFixed(1)+' s ago'}`,
-    `Reports: ${source.reports} · State frames: ${source.states} · Rejected: ${source.rejected}`,
-    `Checksum: ${source.checksum || 'not available'}`,
-    source.error ? `Error: ${source.error}` : '',
-    'Display changes only when new state arrives. No local countdown is simulated.'
-  ].filter(Boolean).join('\n');
   if(isCue){
     $('monitor').className = 'cue-display' + (source.kind==='replay' ? ' replay' : '') + (requestFailed || source.status !== 'connected' ? ' stale' : '');
     $('program-name').textContent = 'PerfectCue';
@@ -149,14 +168,6 @@ function render(){
     $('clock').setAttribute('aria-label',cueDirection(source) || cueText(source));
     $('status').textContent = (source.kind==='replay' ? 'REPLAY · ' : '') + 'EMULATOR TESTED · HARDWARE UNVERIFIED';
     $('message').textContent = 'Captured framed cues · Local 1 second hold · Silence is not a heartbeat';
-    $('diagnostics').textContent = [
-      `Source: ${source.label} (${source.kind}, PerfectCue)`, `Target: ${source.target}`,
-      `Connection: ${source.status}`, `Reports: ${source.reports} · Decoded cues: ${source.cue_sequence}`,
-      `Last decoded cue: ${source.cue || 'none'} · Unknown payload bytes: ${source.unknown_cue_bytes}`,
-      `Last raw HID report: ${source.last_report_hex || 'none'}`,
-      'Framed Next/Previous verified with emulator + dongle. Real PerfectCue and Blank remain untested.',
-      source.error ? `Error: ${source.error}` : ''
-    ].filter(Boolean).join('\n');
   }
   applySizes();
 }

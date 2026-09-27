@@ -194,3 +194,12 @@ space scales along with its triangle, keeping the countdown steady between cues.
 Browser checks covered all three layouts, disabled irrelevant controls, persisted
 sliders, independent output URL values and the 150%/150% combination fitting at
 1920×1080. JavaScript syntax and editor diagnostics checks passed.
+
+### Connection details show all sources
+
+Connection details lists every configured live source, regardless of display
+layout, followed by a separate replay section. Each entry includes its hardware
+role, transport, exact device/source path, connection state, report/error counts,
+last timer state or cue, and transport errors. Both Pi dongles were verified
+connected with independent increasing counters in this view. Cue idle time is
+reported as time since the last cue, not as an assumed lost heartbeat.
