@@ -15,12 +15,14 @@ $('display-mode').value=['timer','cue','both'].includes(preferences.displayMode)
 $('program').value = preferences.program || 'active';
 $('warning').value = Number.isFinite(preferences.warning) ? preferences.warning : 30;
 $('overtime').checked = !!preferences.overtime;
+let confidenceInitialized=typeof preferences.confidenceOvertime==='boolean';
+$('confidence-overtime').checked=!!preferences.confidenceOvertime;
 $('minimal').checked = !!preferences.minimal;
 function sizePercent(value){const n=Number(value);return value==null || value==='' || !Number.isFinite(n) ? 100 : Math.max(50,Math.min(150,n));}
 $('timer-size').value=sizePercent(preferences.timerSize);
 $('cue-size').value=sizePercent(preferences.cueSize);
 document.body.classList.toggle('minimal', outputMode && $('minimal').checked);
-function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value}));}catch{}}
+function save(){if(outputMode)return;try{localStorage.setItem('dsan-display',JSON.stringify({source:$('source').value,cueSource:$('cue-source').value,program:$('program').value,confidenceOvertime:$('confidence-overtime').checked}));}catch{}}
 let videoReady=false, videoRevision=-1, videoSaving=false, pendingVideoChanges={}, videoSaveTimer;
 const videoFields={'display-mode':'displayMode',minimal:'minimal','timer-size':'timerSize','cue-size':'cueSize',warning:'warning',overtime:'overtime'};
 function receiveVideoSettings(video){
@@ -28,6 +30,12 @@ function receiveVideoSettings(video){
   videoReady=true;
   if(video.revision<=videoRevision) return;
   videoRevision=video.revision;
+  if(!outputMode && !confidenceInitialized){
+    // Preserve the previous shared setting once, then keep confidence independent.
+    $('confidence-overtime').checked=video.settings.overtime;
+    confidenceInitialized=true;
+    save();
+  }
   for(const [id,key] of Object.entries(videoFields)){
     const element=$(id);
     if(element.type==='checkbox') element.checked=video.settings[key];
@@ -179,7 +187,8 @@ function render(){
   const index = $('program').value === 'active' ? source.selected : Number($('program').value);
   const program = source.programs[index];
   const stale = requestFailed || !source.fresh;
-  const seconds = program ? ($('overtime').checked ? program.raw_seconds : program.seconds) : null;
+  const showOvertime=outputMode?$('overtime').checked:$('confidence-overtime').checked;
+  const seconds = program ? (showOvertime ? program.raw_seconds : program.seconds) : null;
   const classes = [];
   if (source.kind === 'replay') classes.push('replay');
   if (stale) classes.push('stale');
@@ -254,6 +263,7 @@ async function poll(){
   setTimeout(poll,200);
 }
 for(const id of ['source','cue-source','program']) $(id).addEventListener('change',()=>{save();render();});
+$('confidence-overtime').addEventListener('change',()=>{confidenceInitialized=true;save();render();});
 for(const id of Object.keys(videoFields)) $(id).addEventListener($(id).type==='range'?'input':'change',()=>changeVideoSetting(id));
 window.addEventListener('resize',render);
 $('open-output').addEventListener('click',()=>{

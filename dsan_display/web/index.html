@@ -17,6 +17,9 @@
   <aside id="cue-overlay" hidden><div id="cue-signal"></div><div id="cue-caption"></div></aside>
 </main>
 <footer>
+  <details><summary>Confidence settings</summary><div class="panel">
+    <label><input id="confidence-overtime" type="checkbox" aria-label="Confidence: show overtime past zero"> Show overtime past zero</label>
+  </div></details>
   <details><summary>Video output settings</summary><div class="panel">
     <p id="video-settings-status" role="status" hidden></p>
     <input id="minimal" type="checkbox" hidden aria-hidden="true">
@@ -24,8 +27,8 @@
     <label>Cue size <input id="cue-size" type="range" min="50" max="150" step="5" value="100"><output id="cue-size-value" for="cue-size">100%</output></label>
     <p>Sizes are relative to the default video layout. Oversized combinations scale to fit the output screen.</p>
     <label>Warning threshold <input id="warning" type="number" min="0" max="3600" value="30"> seconds</label>
-    <label><input id="overtime" type="checkbox"> Show overtime past zero</label>
-    <p>Video warning threshold controls amber; zero turns red. Show overtime past zero applies to both confidence and video views.</p>
+    <label><input id="overtime" type="checkbox" aria-label="Video: show overtime past zero"> Show overtime past zero</label>
+    <p>Video warning threshold controls amber; zero turns red. These settings apply to video output.</p>
   </div></details>
   <details><summary>Connection details</summary><pre id="diagnostics">Waiting…</pre></details>
   <span class="hint">F: fullscreen · Escape: exit</span>

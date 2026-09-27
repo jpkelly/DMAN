@@ -1,3 +1,7 @@
+**Current overtime controls:** confidence and video now have separate checkboxes.
+Confidence overtime is saved per browser; video overtime remains shared across
+video outputs. This supersedes the earlier shared-overtime notes below.
+
 **Current video-control behavior (supersedes older per-window appearance notes):**
 presentation controls apply only to video output, and update every open output
 live through shared server settings. The confidence view uses its standard layout,
@@ -284,3 +288,19 @@ views were observed at −2:00 with the option enabled. This renders received ra
 time; it does not simulate elapsed time. Size, layout, minimal presentation and
 the adjustable warning threshold remain video-only. JavaScript syntax and editor
 checks passed.
+
+## Independent overtime controls
+
+**Confidence settings → Show overtime past zero** affects only that confidence
+browser and is stored in its local preferences. **Video output settings → Show
+overtime past zero** affects video outputs through the shared server setting.
+On the first use of the new confidence control, its initial value is copied once
+from the previous shared setting to preserve the current appearance; afterward
+the controls are independent. Both still use received raw timer data, and neither
+continues counting on a stale/disconnected source.
+
+Browser verification covered confidence off/video on (0:00 versus negative time),
+then confidence on/video off (negative time versus 0:00), with confidence changes
+leaving the server's video-settings revision unchanged. Both original enabled
+settings were restored. Confidence persistence survived a page reload. JavaScript
+syntax and editor checks passed.
