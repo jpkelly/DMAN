@@ -197,3 +197,26 @@ enumeration, consistent with the dongle working there. Linux commonly reads
 Consequences: on macOS the dongle is unusable before any application can open
 it. Retrying `8D 00`, different timeouts, or another USB-C hub cannot help. The
 earlier SET_REPORT timeout does not show whether `8D 00` works.
+
+### LED observations and user-space workarounds (2026-09-27, later)
+
+- Owner reported the RJ45-side LED on earlier, then off without being touched.
+  It stayed off with the controller stopped or counting down, across USB
+  replugs, a receive-only capture, two further authorized `8D 00` sends (both
+  timed out) and a reseated RJ45. Its meaning is unknown; no evidence links it
+  to our software. Every send so far went to a dongle already hung by macOS
+  enumeration, so none can have reached firmware.
+- Each replug reproduces the index-92 timeout with no application running
+  (09:37:17 and 09:42:57 local).
+- [tools/capture_probe.py](../tools/capture_probe.py), run as root: libusb
+  `detach_kernel_driver` (macOS capture) returned success but, per libusb
+  1.0.30 source, capture mode "does not re-enumerate"; the device stayed hung.
+  `libusb_reset_device` while captured uses `ResetDevice`, which is a no-op on
+  macOS ≥ 10.11 (libusb source comment; no reset in kernel log); still hung.
+  A real re-enumeration returns the device to AppleUSBHostCompositeDevice,
+  which configures it ~4 ms after enumeration and re-triggers index 92.
+
+Conclusion: no user-space path found to avoid the hang on macOS. Remaining
+macOS route: a kernel-level descriptor override (`kUSBDescriptorOverride`, as
+Apple's AppleUSBHostMergeProperties uses for the built-in iSight) replacing the
+configuration descriptor's `iInterface` 92 with 0, so macOS never requests it.
