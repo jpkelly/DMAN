@@ -24,23 +24,43 @@ No hardware access or device writes occurred during that research; the runtime
 capture utility remains receive-only. Mac operation after initialization is
 still untested.
 
-## Verified on this Mac
+## Current status (2026-09-27)
+
+This section supersedes conflicting statements in the dated history below.
+
+- **Hardware:** DSAN PRO-2000 controller, RJ45 directly to a single-RJ45
+  VC-2000PC dongle, USB via an Anker USB-C adapter/hub. The owner confirms this
+  dongle has worked with a Limitimer. Internal DIP switches/jumpers reportedly
+  select Limitimer versus PerfectCue; their positions are not yet documented.
+- **Leading hypothesis for the silence:** our captures never sent the vendor
+  application's initialization output (`8D 00` for Limitimer). This is a
+  concrete, unverified hypothesis, not a demonstrated fix.
+- **Authorization:** hardware access remains receive-only. Sending the
+  initialization output requires the owner's explicit, per-test approval.
+- **Not implemented:** initialization output, timer decoder, multi-source
+  manager, reconnect routing, display UI.
+- **Not tested:** Windows, Intel macOS, and any real multi-dongle operation.
+
+## History: verified on this Mac
+
+Dated observations in order. Later confirmations are noted inline.
 
 On 2026-09-26, macOS 15.6.1 / Apple Silicon enumerated a device named
 `VideoClock USB Interface by DSan`, VID:PID `0483:101A`, serial-string
 `Ver 0.17 10/03/14`. Its USB interface is HID class `03`, with interrupt-IN
 endpoint `0x81`, maximum packet size 8 bytes. No matching serial port or HIDAPI
 entry appeared. Direct libusb input access succeeded and returned one 8-byte
-all-zero report during a two-second check. This is **not evidence of Limitimer
-compatibility**, nor a verified timer-state fixture.
+all-zero report during a two-second check. That report is not a verified
+timer-state fixture. (Limitimer compatibility was later confirmed by the owner;
+see the current status above.)
 
 The user identified the controller as **PRO-2000**, with its RJ45 connected
 directly to the **VC-2000PC** dongle's RJ45. Unplugging USB removed exactly the
 DSan device and its HID-class interface; serial and HIDAPI inventories did not
 change. Reconnection restored that same device/interface, completing USB
-attribution. HID report layout and timer payload are still unconfirmed. DSAN's current
-two-RJ45 VC-2000-2 documentation does not prove compatibility of that older
-single-RJ45 model.
+attribution. HID report layout and timer payload are still unconfirmed. (DSAN's
+two-RJ45 VC-2000-2 documentation was not used to establish compatibility; the
+owner later confirmed Limitimer use of this single-RJ45 dongle directly.)
 
 The first user-labelled capture (program 1 stopped at 1:00) received one report,
 `07 81 10 83 00 00 81 00`, in 10 seconds. Integrity and replay checks passed;
@@ -51,11 +71,12 @@ Subsequent captures at a reported 0:00 and after Repeat to 1:00 also received no
 bytes; the latter used a longer 1000 ms USB input timeout. Further state captures
 are on hold pending investigation of the receive path.
 A libusb diagnostic confirmed successful interface access followed by interrupt
-read timeouts. The user tentatively recalls prior Windows VideoClock success;
-that has not yet been reproduced with the current setup.
+read timeouts. The owner has since confirmed prior Limitimer operation of this
+dongle; it has not yet been reproduced on this Mac.
 No Windows machine is currently available. Legacy DSAN documentation explicitly
 distinguishes PerfectCue and Limitimer dongle configurations; see the source links
-in the investigation notes. The installed configuration remains unknown.
+in the investigation notes. The owner reports internal switches/jumpers select
+the role; their exact positions have not been inspected or documented.
 The only available USB-C adapter is Anker; a hub-bypass comparison is currently
 unavailable. No evidence singles out the adapter as the cause. A
 [DSAN compatibility brief](docs/dsan-compatibility-brief.md) records the questions
@@ -65,7 +86,9 @@ by silence. A subsequent detached two-minute recording completed with 120 empty
 reads and no received bytes. The user reported 0:00 while it was active; exact
 button and zero-crossing timing remains unverified. An earlier interactive PTY
 attempt ended unexpectedly and is explicitly preserved as incomplete. Timer
-decoding remains blocked on useful input.
+decoding remains blocked on useful input. Later offline installer analysis found
+that the vendor application sends an initialization output these captures never
+sent; see the current status above.
 
 HID investigation found a separate Mac process, **Ultraleap Hand Tracking**,
 repeatedly attempting to open the DSAN device. This is a potential conflict, not
@@ -236,7 +259,7 @@ identifiers. No invented data is labelled as a real timer capture.
 ## Validation and next stage
 
 ```sh
-python -m compileall -q dsan_capture tests
+python -m compileall -q dsan_capture tests tools
 python -m unittest discover -s tests -v
 ```
 
