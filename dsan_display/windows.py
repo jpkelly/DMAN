@@ -101,7 +101,7 @@ def configure(devices, read=input):
     return validate_config({'schema': 1, 'sources': sources})
 
 
-def guided_configure(read=input, enumerate_devices=None):
+def guided_configure(read=input, enumerate_devices=None, *, prompt_callback=None, notify=None):
     """Assign roles by an observed plug-in sequence, without trusting serial IDs.
 
     Enumeration only: no streaming handles are opened and no initialization is
@@ -109,8 +109,11 @@ def guided_configure(read=input, enumerate_devices=None):
     """
     enumerate_devices = enumerate_devices or dsan_devices
 
-    def ask(prompt):
-        answer = read(prompt).strip()
+    notify = notify or print
+
+    def ask(prompt, kind='continue', default=''):
+        answer = (prompt_callback({'text': prompt, 'kind': kind, 'default': default})
+                  if prompt_callback else read(prompt)).strip()
         if answer.lower() == 'q':
             raise ValueError('Setup cancelled; previous source configuration kept')
         return answer
@@ -122,36 +125,38 @@ def guided_configure(read=input, enumerate_devices=None):
             raise ValueError('Windows returned duplicate HID paths; cannot pair these devices reliably')
         return {device['path_hex']: device for device in devices}
 
-    print('Guided dongle setup. No labelled USB ports or serial numbers are required.')
-    print('Connect each dongle to its intended controller; keep those cables unchanged.')
-    print("Choose the role matching the controller and the dongle's internal hardware setting.")
-    print('Enter q at any prompt to cancel without replacing the saved setup.')
+    notify('Guided dongle setup. No labelled USB ports or serial numbers are required.')
+    notify('Connect each dongle to its intended controller; keep those cables unchanged.')
+    notify("Choose the role matching the controller and the dongle's internal hardware setting.")
+    notify('Cancel setup to keep previous assignments.' if prompt_callback else
+           'Enter q at any prompt to cancel without replacing the saved setup.')
     connected_setup = bool(inventory_by_path())
     if connected_setup:
-        print('Dongles are already connected. Keep them connected; we will identify one at a time by unplugging and reconnecting it.')
+        notify('Dongles are already connected. Keep them connected; we will identify one at a time by unplugging and reconnecting it.')
     else:
         while True:
             ask('With all DSAN dongles unplugged from USB, press Enter: ')
             if not inventory_by_path():
                 break
-            print('DSAN devices are still connected. Unplug them before continuing.')
+            notify('DSAN devices are still connected. Unplug them before continuing.')
 
     sources = []
     paired = set()
     while True:
-        choice = ask('Add dongle: [1] Limitimer, [2] PerfectCue, [Enter] Finish: ')
+        choice = ask('Choose the next dongle to identify, or review the paired devices.' if prompt_callback else
+                     'Add dongle: [1] Limitimer, [2] PerfectCue, [Enter] Finish: ', 'role')
         if not choice:
             if not sources:
-                print('Pair at least one dongle before finishing.')
+                notify('Pair at least one dongle before finishing.')
                 continue
             if set(inventory_by_path()) != paired:
-                print('Connections changed. Keep paired devices connected and pair or disconnect any extra dongles.')
+                notify('Connections changed. Keep paired devices connected and pair or disconnect any extra dongles.')
                 continue
-            print('Setup complete. Normal startup initializes each dongle for its assigned role.')
-            print('Confirm the displayed timer and a Next cue before using the outputs.')
+            notify('Setup complete. Normal startup initializes each dongle for its assigned role.')
+            notify('Confirm the displayed timer and a Next cue before using the outputs.')
             return validate_config({'schema': 1, 'sources': sources})
         if choice not in ('1', '2'):
-            print('Choose 1 or 2, or press Enter to finish.')
+            notify('Choose 1 or 2, or press Enter to finish.')
             continue
         role = 'limitimer' if choice == '1' else 'perfectcue'
         role_name = 'Limitimer' if choice == '1' else 'PerfectCue'
@@ -160,7 +165,7 @@ def guided_configure(read=input, enumerate_devices=None):
             if paired - before:
                 raise ValueError('A paired dongle is missing; setup stopped without replacing the saved configuration')
             if not before - paired:
-                print('All connected dongles are paired. Connect an additional dongle or finish setup.')
+                notify('All connected dongles are paired. Connect an additional dongle or finish setup.')
                 continue
             while True:
                 ask(f'Unplug ONLY the next {role_name} USB dongle. Leave all others connected, then press Enter: ')
@@ -169,7 +174,7 @@ def guided_configure(read=input, enumerate_devices=None):
                 if added or len(removed) > 1 or removed & paired:
                     raise ValueError('Unexpected USB change or an already-paired dongle was removed; setup stopped without guessing')
                 if not removed:
-                    print('No dongle disappeared yet. Unplug only the requested unit and retry.')
+                    notify('No dongle disappeared yet. Unplug only the requested unit and retry.')
                     continue
                 break
             while True:
@@ -179,7 +184,7 @@ def guided_configure(read=input, enumerate_devices=None):
                 if remaining - current or len(added) > 1:
                     raise ValueError('Other USB connections changed during reconnect; setup stopped without guessing')
                 if not added:
-                    print('The dongle has not reappeared as a separate HID device yet. Check the connection and retry.')
+                    notify('The dongle has not reappeared as a separate HID device yet. Check the connection and retry.')
                     continue
                 path = added.pop()
                 break
@@ -189,28 +194,28 @@ def guided_configure(read=input, enumerate_devices=None):
             ask(f'Plug in ONLY the next {role_name} dongle. Leave paired dongles connected, then press Enter: ')
             current = inventory_by_path()
             if paired - current.keys():
-                print('A previously paired dongle is missing. Reconnect it to the same port before continuing.')
+                notify('A previously paired dongle is missing. Reconnect it to the same port before continuing.')
                 continue
             added = current.keys() - paired
             if len(added) == 0:
-                print('No new DSAN HID device appeared. Check USB connection/driver; do not replace the HID driver with WinUSB.')
+                notify('No new DSAN HID device appeared. Check USB connection/driver; do not replace the HID driver with WinUSB.')
                 continue
             if len(added) != 1:
-                print('More than one new dongle appeared. Leave only the requested new dongle connected.')
+                notify('More than one new dongle appeared. Leave only the requested new dongle connected.')
                 continue
             path = added.pop()
             break
         default_label = f'{role_name} {1 + sum(s["role"] == role for s in sources)}'
         while True:
-            label = ask(f'Name [{default_label}]: ') or default_label
+            label = ask('Name this input' if prompt_callback else f'Name [{default_label}]: ', 'name', default_label) or default_label
             if '=' in label or any(s['label'].casefold() == label.casefold() for s in sources):
-                print('Use a unique name without an equals sign.')
+                notify('Use a unique name without an equals sign.')
                 continue
             break
         sources.append({'label': label, 'path_hex': path, 'role': role, 'initialize': True})
         paired.add(path)
         logging.info('Paired %s as %s using new HID path %s', label, role, path)
-        print(f'Paired {label}.')
+        notify(f'Paired {label}.')
 
 
 def main(argv=None):
@@ -233,6 +238,10 @@ def main(argv=None):
     logfile = logdir / (datetime.now(timezone.utc).strftime('windows-%Y%m%dT%H%M%S-%fZ') + '.log')
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s',
                         handlers=[logging.FileHandler(logfile, encoding='utf-8'), logging.StreamHandler()])
+    if not args.advanced_setup:
+        from .setup import launch_gui
+        launch_gui(args, dsan_devices)
+        return
     try:
         devices = dsan_devices()
         logging.info('DSAN HID inventory: %s', json.dumps(devices))

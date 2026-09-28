@@ -72,6 +72,8 @@
       "args": [
         "-m",
         "dsan_display",
+        "--setup-pi",
+        "pi@pi5start.local",
         "--pi",
         "PRO-2000=pi@pi5start.local:/dev/hidraw0",
         "--perfectcue-pi",

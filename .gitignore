@@ -5,6 +5,8 @@ build/
 dist/
 windows-sources.json
 windows-sources.tmp
+pi-sources.json
+pi-sources.tmp
 video-settings.json
 video-settings.tmp
 logs/

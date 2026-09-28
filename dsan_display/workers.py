@@ -93,8 +93,11 @@ class Worker:
     def run_pi(self):
         host, device = self.source.target.split(':', 1)
         root = self.remote_root.rstrip('/')
-        command = shlex.join(['sudo', '-n', root + '/.venv/bin/python', '-u',
-                              root + '/tools/pi_stream.py', '--device', device])
+        arguments = ['sudo', '-n', root + '/.venv/bin/python', '-u',
+                     root + '/tools/pi_stream.py', '--device', device]
+        if self.initialize_hid:
+            arguments += ['--initialize-role', self.source.role]
+        command = shlex.join(arguments)
         self.process = subprocess.Popen(
             ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10',
              '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=2', host, command],
@@ -111,6 +114,9 @@ class Worker:
                     raise RuntimeError(line.strip()[:300])
                 if message.get('kind') == 'connected':
                     self.source.connected()
+                elif message.get('kind') == 'initialized':
+                    log.info('%s: Pi initialized %s with %s bytes', self.source.label,
+                             message.get('role'), message.get('bytes'))
                 elif message.get('kind') == 'report':
                     self.source.receive(bytes.fromhex(message['hex']))
                 elif message.get('kind') == 'error':

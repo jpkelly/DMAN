@@ -11,6 +11,7 @@ def self_test():
     import serial.tools.list_ports
     import usb.core
     from .__main__ import Handler, Server
+    from .setup import Setup
 
     if not callable(hid.enumerate) or not callable(serial.tools.list_ports.comports):
         raise RuntimeError('Missing transport entry points')
@@ -21,11 +22,15 @@ def self_test():
         if not notices.is_file():
             raise RuntimeError('Bundled third-party notices missing')
     server = Server(('127.0.0.1', 0), Handler)
+    server.setup = Setup(server, Path('__unused_self_test_config__.json'), lambda: [])
     server.workers, server.control_lock = {}, threading.Lock()
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
         expected = {'/': b'Open video output', '/output': b'<body class="output">',
+                    '/setup': b'Connect your inputs.', '/setup.js': b'async function command(',
+                    '/setup.css': b'.steps',
+                    '/api/setup': b'"status": "idle"',
                     '/app.js': b'function render()', '/style.css': b'--video-cue-size',
                     '/display-windows.js': b'installOutputExit',
                     '/api/state': b'"sources": []'}

@@ -17,6 +17,8 @@ def emit(message):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--device', required=True)
+    parser.add_argument('--initialize-role', choices=('limitimer', 'perfectcue'),
+                        help='Send the reviewed initialization once before receiving')
     args = parser.parse_args()
     if not re.fullmatch(r'/dev/hidraw[0-9]+', args.device):
         raise ValueError('Select an exact HID node')
@@ -26,8 +28,14 @@ def main():
         raise ValueError('Selected device is not DSAN 0483:101A')
     if (path / 'report_descriptor').read_bytes() != EXPECTED_DESCRIPTOR:
         raise ValueError('Unexpected report descriptor')
-    fd = os.open(args.device, os.O_RDONLY | os.O_NONBLOCK)
+    fd = os.open(args.device, (os.O_RDWR if args.initialize_role else os.O_RDONLY) | os.O_NONBLOCK)
     try:
+        if args.initialize_role:
+            report = bytes((0, 0x8D, 0 if args.initialize_role == 'limitimer' else 1)) + bytes(62)
+            written = os.write(fd, report)
+            if written != len(report):
+                raise OSError(f'Initialization wrote {written} of 65 bytes; not retried')
+            emit({'kind': 'initialized', 'role': args.initialize_role, 'bytes': written})
         emit({'kind': 'connected', 'device': args.device})
         heartbeat = time.monotonic()
         while True:

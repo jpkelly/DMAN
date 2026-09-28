@@ -263,6 +263,7 @@ async function poll(){
     const response=await fetch('/api/state',{cache:'no-store',signal:AbortSignal.timeout(1500)});
     if(!response.ok) throw new Error('State request failed');
     const state=await response.json();
+    $('device-setup').hidden=outputMode || !state.setup_available;
     if(state.application?.status==='stopping') beginApplicationQuit(true);
     else if(!applicationQuitting){sources=state.sources;requestFailed=false;updateOptions();receiveVideoSettings(state.video);render();}
   }catch{

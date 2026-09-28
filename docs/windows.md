@@ -39,14 +39,18 @@ and standalone executable packaging are not covered by this milestone.
 3. Close DSAN VideoClock and any other reader of these dongles. Connect each
    controller to its own dongle with the correct internal **Limitimer/PerfectCue**
    hardware setting. USB IDs alone cannot determine that setting.
-4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). First launch checks whether dongles are already connected. If so, it identifies
+4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). The browser opens device setup.
+   First launch checks whether dongles are already connected. If so, it identifies
    each by a brief unplug/reconnect while peers stay connected. Otherwise it adds
    dongles one at a time. Choose the next unit's
    actual role (Limitimer/PerfectCue), plug it in and assign a name. The newly
    appeared HID path is paired automatically; no port labels are required.
-   Normal startup sends each selected role's reviewed initialization. Advanced
+   Choose **Review paired devices**, then **Save and start inputs**. Saving
+   rechecks connections and sends each selected role's reviewed initialization. Advanced
    manual/receive-only setup remains available with `--advanced-setup`.
-5. The browser opens `http://127.0.0.1:8765`. Keep the console running. Select a
+5. Check the received timer/cues on the final setup page, then select **Open
+   confidence display**. **Device setup** in the header lets you change assignments.
+   Keep the console running. Select a
    Limitimer source/program and PerfectCue overlay, move the browser to the
    monitor and click Fullscreen. Selecting the PerfectCue source as the main
    source shows cues alone. Separate browser windows can display different

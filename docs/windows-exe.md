@@ -5,8 +5,8 @@
 Extract the package and double-click **DSANDisplay.exe**. Python does not need to
 be installed on the operating machine. Keep the `licenses` folder with the
 distribution. The executable also embeds those notices. A normal browser is
-still required; the first package deliberately uses the existing console setup
-and browser renderer, not a new native window framework.
+still required. Device setup and the display run in that browser. A console
+window remains open for startup diagnostics; keep it open while using the app.
 
 First launch uses guided pairing; no labelled USB ports are needed:
 
@@ -14,7 +14,17 @@ First launch uses guided pairing; no labelled USB ports are needed:
   role, unplug only that unit when prompted, then reconnect it. The wizard matches
   the disappearance and reappearance while checking that peers remain present.
 - If none are connected, add them one at a time when prompted.
-- Give each unit a friendly name, repeat for the other role, and finish setup.
+- Give each unit a friendly name, repeat for the other role, then choose
+  **Review paired devices** and **Save and start inputs**.
+
+Pairing only enumerates devices. Saving rechecks every selected path, stores the
+configuration and starts the inputs. The final page shows actual received timer
+data and cues for comparison with the controller. Select **Open confidence
+display** when ready. **Device setup** in the operator header reopens the wizard.
+Cancel keeps the saved configuration; **Resume saved inputs** restarts those
+bindings after a cancelled plug/unplug test. Missing paths require reconnection
+or a new setup and are never silently replaced. Changing setup can interrupt
+live outputs when a dongle is unplugged or the new assignments are applied.
 
 Normal startup initializes each paired unit for its assigned role. The role must
 match the attached controller and internal hardware configuration; this is guided
@@ -24,7 +34,7 @@ and logs are stored under `%LOCALAPPDATA%\DSANDisplay`; the one-file temporary
 extraction directory is never used for persistent state. Later launches reuse
 the saved bindings. Missing devices are reported without substituting a peer.
 
-The browser opens the operator view. **Open video output** creates a separate
+From the operator view, **Open video output** creates a separate
 timer/cue view for HDMI/DisplayPort: move it onto the extended output display and
 press **F**. Minimal display hides routine text while keeping connection warnings.
 Next is a large green right triangle; Previous is a large red left triangle.
@@ -51,7 +61,7 @@ DSANDisplay.exe --host 127.0.0.1
 DSANDisplay.exe --data-dir "D:\Show Data\DSAN"
 ```
 
-`--configure` runs guided pairing again. `--advanced-setup` retains manual HID-path
+`--configure` opens browser pairing again. `--advanced-setup` retains console HID-path
 selection and receive-only startup for diagnostics. The previous configuration is
 replaced only after a complete new mapping and fresh enumeration validate.
 `--self-test` imports the compiled HID dependency and tests bundled HTML/CSS/JS,

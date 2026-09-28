@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DSAN device setup</title><link rel="stylesheet" href="/setup.css"></head>
+<body>
+<header><a class="brand" href="/">DSAN <span>Device setup</span></a><button id="quit">Quit application</button></header>
+<main>
+  <p id="target" class="eyebrow">CONNECTING</p>
+  <h1>Connect your inputs.</h1>
+  <p class="intro">Identify each dongle, give it a name, then check your timer and cues.</p>
+  <ol class="steps"><li id="step-pair">1 · Identify</li><li id="step-review">2 · Review</li><li id="step-live">3 · Check inputs</li></ol>
+  <section class="card" aria-labelledby="heading">
+    <h2 id="heading" tabindex="-1">Loading setup…</h2>
+    <p id="instruction"></p>
+    <div id="actions"></div>
+    <form id="name-form" hidden><label for="input-name">Input name</label><input id="input-name" maxlength="120" autocomplete="off" required><button type="submit">Use this name</button></form>
+    <div id="review"></div>
+    <p id="error" role="alert" hidden></p>
+    <p id="notice" role="status"></p>
+  </section>
+  <section id="live" class="card" hidden><h2>Received input</h2><div id="readings"></div><p>Compare the timer with the controller. Trigger Next and Previous to check cue direction. A connected USB device alone does not verify its assigned role.</p><a class="primary" href="/">Open confidence display</a></section>
+  <details><summary>Setup guidance</summary><div id="messages"></div></details>
+  <footer><a href="/">Return to display</a><button id="cancel" hidden>Cancel setup</button><p>Use the role matching the controller and the dongle’s internal setting. Setup identifies devices by plugging and unplugging; it cannot read the internal switch setting.</p></footer>
+</main><script src="/setup.js"></script>
+</body></html>

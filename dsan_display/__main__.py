@@ -28,6 +28,7 @@ class Server(ThreadingHTTPServer):
         self.allowed_hostnames = local_hostnames()
         self.video_settings = VideoSettings()
         self.workers = {}
+        self.setup = None
         self.control_lock = threading.Lock()
         self.quitting = threading.Event()
         self.cleanup_lock = threading.Lock()
@@ -40,7 +41,9 @@ class Server(ThreadingHTTPServer):
         super().server_bind()
 
     def stop_workers(self):
-        with self.cleanup_lock:
+        if self.setup:
+            self.setup.close()
+        with self.control_lock, self.cleanup_lock:
             if self.workers_stopped:
                 return
             for worker in self.workers.values():
@@ -99,9 +102,19 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/api/state':
             self.reply({'sources': [w.source.snapshot() for w in self.server.workers.values()],
                         'video': self.server.video_settings.snapshot(),
+                        'setup_available': self.server.setup is not None,
                         'application': {'status': 'stopping' if self.server.quitting.is_set() else 'running'}})
             return
+        if path == '/api/setup':
+            if not self.server.setup:
+                self.reply({'error': 'Device setup is not enabled for this launch'}, status=404)
+            else:
+                self.reply(self.server.setup.snapshot())
+            return
         files = {'/': ('index.html', 'text/html; charset=utf-8'),
+                 '/setup': ('setup.html', 'text/html; charset=utf-8'),
+                 '/setup.js': ('setup.js', 'text/javascript; charset=utf-8'),
+                 '/setup.css': ('setup.css', 'text/css; charset=utf-8'),
                  '/output': ('index.html', 'text/html; charset=utf-8'),
                  '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                  '/display-windows.js': ('display-windows.js', 'text/javascript; charset=utf-8'),
@@ -124,7 +137,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host() or self.headers.get('Origin') != expected:
             self.reply({'error': 'Same-origin request to this server required'}, status=403)
             return
-        if self.path not in ('/api/restart-replay', '/api/video-settings', '/api/quit'):
+        setup_routes = ('/api/setup/start', '/api/setup/answer', '/api/setup/cancel', '/api/setup/apply', '/api/setup/resume')
+        if self.path not in ('/api/restart-replay', '/api/video-settings', '/api/quit') + setup_routes:
             self.reply({'error': 'Not found'}, status=404)
             return
         try:
@@ -132,6 +146,24 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 1024:
                 raise ValueError('Invalid request size')
             data = json.loads(self.rfile.read(length))
+            if not isinstance(data, dict):
+                raise ValueError('Expected a JSON object')
+            if self.path in setup_routes:
+                if not self.server.setup or self.server.quitting.is_set():
+                    raise ValueError('Device setup is not available')
+                setup = self.server.setup
+                if self.path.endswith('/start'):
+                    setup.start()
+                elif self.path.endswith('/answer'):
+                    setup.respond(data)
+                elif self.path.endswith('/cancel'):
+                    setup.cancel()
+                elif self.path.endswith('/resume'):
+                    setup.restore()
+                else:
+                    setup.apply(data.get('session'))
+                self.reply(setup.snapshot())
+                return
             if self.path == '/api/quit':
                 if not isinstance(data, dict) or data.get('confirm') is not True:
                     raise ValueError('Explicit quit confirmation required')
@@ -166,6 +198,8 @@ def main(argv=None):
     parser.add_argument('--list-hid', action='store_true', help='List DSAN HID paths as JSON, without opening a stream')
     parser.add_argument('--send-limitimer-init', action='store_true', help='Send one reviewed 8D 00 output to EACH selected native HID source; requires Limitimer hardware configuration')
     parser.add_argument('--open-browser', action='store_true')
+    parser.add_argument('--setup-pi', help='Enable real browser pairing on this SSH Pi host')
+    parser.add_argument('--setup-config', type=Path, default=Path('pi-sources.json'))
     parser.add_argument('--init-hid', action='append', default=[], metavar='PATH_HEX',
                         help='Initialize this selected HID path once using its configured role')
     args = parser.parse_args(argv)
@@ -215,6 +249,9 @@ def main(argv=None):
     server = create_server(args.host, args.port)
     server.video_settings = video_settings
     server.workers, server.control_lock = workers, threading.Lock()
+    if args.setup_pi:
+        from .pi_setup import attach
+        attach(server, args.setup_pi, args.remote_root, args.setup_config)
     for worker in workers.values():
         worker.start()
     browser_host = '127.0.0.1' if args.host in ('0.0.0.0', '::') and server.dual_stack else args.host
