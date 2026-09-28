@@ -101,9 +101,88 @@ def configure(devices, read=input):
     return validate_config({'schema': 1, 'sources': sources})
 
 
+def guided_configure(read=input, enumerate_devices=None):
+    """Assign roles by an observed plug-in sequence, without trusting serial IDs.
+
+    Enumeration only: no handles are opened and no initialization is sent until
+    the complete configuration is validated and the display starts.
+    """
+    enumerate_devices = enumerate_devices or dsan_devices
+
+    def ask(prompt):
+        answer = read(prompt).strip()
+        if answer.lower() == 'q':
+            raise ValueError('Setup cancelled; previous source configuration kept')
+        return answer
+
+    def inventory_by_path():
+        devices = enumerate_devices()
+        paths = [device['path_hex'] for device in devices]
+        if len(paths) != len(set(paths)):
+            raise ValueError('Windows returned duplicate HID paths; cannot pair these devices reliably')
+        return {device['path_hex']: device for device in devices}
+
+    print('Guided dongle setup. No labelled USB ports or serial numbers are required.')
+    print('Connect each dongle to its intended controller; keep those cables unchanged.')
+    print("Choose the role matching the controller and the dongle's internal hardware setting.")
+    print('Enter q at any prompt to cancel without replacing the saved setup.')
+    while True:
+        ask('Unplug all DSAN dongles from USB, then press Enter: ')
+        if not inventory_by_path():
+            break
+        print('DSAN devices are still connected. Unplug them before continuing.')
+
+    sources = []
+    paired = set()
+    while True:
+        choice = ask('Add dongle: [1] Limitimer, [2] PerfectCue, [Enter] Finish: ')
+        if not choice:
+            if not sources:
+                print('Pair at least one dongle before finishing.')
+                continue
+            if set(inventory_by_path()) != paired:
+                print('Connections changed. Keep paired devices connected and pair or disconnect any extra dongles.')
+                continue
+            print('Setup complete. Normal startup initializes each dongle for its assigned role.')
+            print('Confirm the displayed timer and a Next cue before using the outputs.')
+            return validate_config({'schema': 1, 'sources': sources})
+        if choice not in ('1', '2'):
+            print('Choose 1 or 2, or press Enter to finish.')
+            continue
+        role = 'limitimer' if choice == '1' else 'perfectcue'
+        role_name = 'Limitimer' if choice == '1' else 'PerfectCue'
+        while True:
+            ask(f'Plug in ONLY the next {role_name} dongle. Leave paired dongles connected, then press Enter: ')
+            current = inventory_by_path()
+            if paired - current.keys():
+                print('A previously paired dongle is missing. Reconnect it to the same port before continuing.')
+                continue
+            added = current.keys() - paired
+            if len(added) == 0:
+                print('No new DSAN HID device appeared. Check USB connection/driver; do not replace the HID driver with WinUSB.')
+                continue
+            if len(added) != 1:
+                print('More than one new dongle appeared. Leave only the requested new dongle connected.')
+                continue
+            path = added.pop()
+            break
+        default_label = f'{role_name} {1 + sum(s["role"] == role for s in sources)}'
+        while True:
+            label = ask(f'Name [{default_label}]: ') or default_label
+            if '=' in label or any(s['label'].casefold() == label.casefold() for s in sources):
+                print('Use a unique name without an equals sign.')
+                continue
+            break
+        sources.append({'label': label, 'path_hex': path, 'role': role, 'initialize': True})
+        paired.add(path)
+        logging.info('Paired %s as %s using new HID path %s', label, role, path)
+        print(f'Paired {label}.')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--configure', action='store_true', help='Choose, name and assign dongle roles again')
+    parser.add_argument('--advanced-setup', action='store_true', help='Select existing HID paths manually, with optional receive-only startup')
     parser.add_argument('--data-dir', type=Path, default=default_data_directory(), help='Folder for saved sources and logs')
     parser.add_argument('--config', type=Path, help='Override the saved source configuration path')
     parser.add_argument('--self-test', action='store_true', help='Check bundled imports and web assets without accessing hardware')
@@ -123,15 +202,19 @@ def main(argv=None):
     try:
         devices = dsan_devices()
         logging.info('DSAN HID inventory: %s', json.dumps(devices))
-        if args.configure or not args.config.exists():
-            config = configure(devices)
+        if args.configure or args.advanced_setup or not args.config.exists():
+            config = configure(devices) if args.advanced_setup else guided_configure()
+            # Re-enumerate after the physical pairing steps, then preflight before
+            # replacing the old file. Device writes happen only in display_main.
+            devices = dsan_devices()
+            arguments = launch_arguments(config, devices)
             # Validate the whole selection before replacing the previous configuration.
             args.config.parent.mkdir(parents=True, exist_ok=True)
             args.config.with_suffix('.tmp').write_text(json.dumps(config, indent=2) + '\n', encoding='utf-8')
             args.config.with_suffix('.tmp').replace(args.config)
         else:
             config = json.loads(args.config.read_text(encoding='utf-8'))
-        arguments = launch_arguments(config, devices)
+            arguments = launch_arguments(config, devices)
         arguments += ['--host', args.host, '--port', str(args.port)]
         arguments += ['--video-settings', str(args.data_dir / 'video-settings.json')]
         logging.info('Source configuration: %s', json.dumps(config))

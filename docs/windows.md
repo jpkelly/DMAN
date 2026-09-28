@@ -39,11 +39,12 @@ and standalone executable packaging are not covered by this milestone.
 3. Close DSAN VideoClock and any other reader of these dongles. Connect each
    controller to its own dongle with the correct internal **Limitimer/PerfectCue**
    hardware setting. USB IDs alone cannot determine that setting.
-4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). On first launch, select the numbered
-   device(s), give each a stage/source name, assign its hardware role, and choose
-   its startup mode. Option 1 sends that role's reviewed initialization;
-   option 2/default is receive-only.
-   This choice is saved and reused on later launches, without repeated prompts.
+4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). First launch guides you through
+   unplugging DSAN USB devices and adding one at a time. Choose the next unit's
+   actual role (Limitimer/PerfectCue), plug it in and assign a name. The newly
+   appeared HID path is paired automatically; no port labels are required.
+   Normal startup sends each selected role's reviewed initialization. Advanced
+   manual/receive-only setup remains available with `--advanced-setup`.
 5. The browser opens `http://127.0.0.1:8765`. Keep the console running. Select a
    Limitimer source/program and PerfectCue overlay, move the browser to the
    monitor and click Fullscreen. Selecting the PerfectCue source as the main
@@ -70,15 +71,15 @@ To change source bindings, run this from Command Prompt in the project folder:
 "Start DSAN.cmd" --configure
 ```
 
-For identical dongles, identify the paths by attaching them one at a time, then
-connect all of them and configure the complete selection. Keep USB ports/hub
-positions consistent and label the physical dongles. A missing saved path stops
-startup instead of substituting a peer. During operation, a timer source becomes
-stale independently; cue read errors mark that source disconnected. Cue silence
-does not prove disconnection because no heartbeat has been verified. There is no
-automatic reconnect. After replugging, restart
-and verify each source before use. Exact paths identify current OS endpoints;
-they cannot prove physical identity after swapping indistinguishable dongles.
+Guided pairing works with identical descriptor/serial strings by watching which
+HID path appears when you connect each unit. It requires one new path at a time
+and preserves earlier bindings while pairing the next. Windows must still expose
+both dongles distinctly. Keep the same USB arrangement after setup; new ports,
+hubs or machines may require `--configure` again. Labels on cables/ports are
+optional operational aids, not a prerequisite. Swapping indistinguishable dongles
+between already-paired paths cannot be detected reliably from descriptors alone.
+During operation there is no automatic reconnect; a lost source becomes stale or
+disconnected independently. Restart after reconnecting and verify the mapping.
 
 ## First Windows hardware check
 

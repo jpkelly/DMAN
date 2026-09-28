@@ -8,9 +8,17 @@ distribution. The executable also embeds those notices. A normal browser is
 still required; the first package deliberately uses the existing console setup
 and browser renderer, not a new native window framework.
 
-On first launch select the exact dongles, name them, assign Limitimer or PerfectCue
-to match their internal hardware configuration, and select each startup mode.
-USB IDs and firmware-looking serial strings cannot identify their roles. Settings
+First launch uses guided pairing; no labelled USB ports are needed:
+
+1. Unplug DSAN USB dongles when prompted, keeping their controller cables attached.
+2. Choose Limitimer or PerfectCue for the next unit, then connect only that dongle.
+3. The app identifies the newly appeared HID path and asks for a friendly name.
+4. Leave it connected and repeat for the next dongle, then finish setup.
+
+Normal startup initializes each paired unit for its assigned role. The role must
+match the attached controller and internal hardware configuration; this is guided
+assignment, not a firmware-type query. USB IDs and firmware-looking serial strings
+cannot identify their roles. Settings
 and logs are stored under `%LOCALAPPDATA%\DSANDisplay`; the one-file temporary
 extraction directory is never used for persistent state. Later launches reuse
 the saved bindings. Missing devices are reported without substituting a peer.
@@ -26,12 +34,15 @@ From Command Prompt in the executable folder:
 
 ```bat
 DSANDisplay.exe --configure
+DSANDisplay.exe --advanced-setup
 DSANDisplay.exe --self-test
 DSANDisplay.exe --host 127.0.0.1
 DSANDisplay.exe --data-dir "D:\Show Data\DSAN"
 ```
 
-`--configure` replaces source selection after the complete new selection validates.
+`--configure` runs guided pairing again. `--advanced-setup` retains manual HID-path
+selection and receive-only startup for diagnostics. The previous configuration is
+replaced only after a complete new mapping and fresh enumeration validate.
 `--self-test` imports the compiled HID dependency and tests bundled HTML/CSS/JS,
 video output and state API over a temporary localhost server. It does not enumerate
 USB devices, issue device messages or test hardware. Initialization, when enabled
@@ -141,3 +152,11 @@ and unsupported/denied browsers offer manual placement instead. This is not a
 remote host monitor selector. Physical multi-monitor placement on Windows remains
 a hardware check. CI runs synthetic browser-window behavior tests in addition to
 the Python tests and packaged smoke test.
+
+Guided pairing matches newly appeared paths rather than inventory order or serial
+strings. It waits for exactly one new device and requires previously paired devices
+to remain present. Ambiguous/duplicate paths are not guessed. Enter `q` to cancel;
+no partial configuration is saved and no hardware output is sent during pairing.
+After startup, check the displayed timer and an intentional Next cue. Moving ports,
+hubs or machines can require pairing again. Actual Windows USB enumeration and
+hardware pairing still need testing; automated tests use simulated plug sequences.

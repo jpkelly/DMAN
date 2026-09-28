@@ -100,3 +100,14 @@ automatic reconnect implementation. The trial confirms that traffic identificati
 alone cannot reliably choose the cue startup mode while its stream is empty.
 Keep explicit roles for initialization and use protocol evidence to check them.
 Windows and same-hub behavior remain separate, untested hardware cases.
+
+## First run on a new machine
+
+Ports do not need existing labels. The Windows launcher now guides one-at-a-time
+pairing: disconnect DSAN USB devices, choose the intended role, connect that unit,
+and bind the single newly appeared HID path. Repeat for the other unit. Pairing
+uses connection changes and operator knowledge of the attached system; it does not
+claim to query the hardware role. Startup initialization follows only after the
+complete mapping validates. This avoids relying on serial strings or arbitrary
+list ordering. The RequestID investigation was paused before sending that query;
+no ID query or SetID command was used for this setup change.
