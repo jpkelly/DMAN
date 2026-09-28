@@ -34,3 +34,21 @@ must be checked after reconnect/reboot and can be re-paired with the wizard.
 The local setup API tests use explicitly mocked device inventories and handles
 to exercise pairing, cancellation, stale answers, changed devices, persistence,
 and shutdown. No simulated readings are used in the operator UI.
+
+## Real Pi browser pairing result
+
+The browser wizard was exercised with both dongles initially connected. The
+operator unplugged/reconnected Limitimer, then PerfectCue; each disappearance
+was accepted only while its peer remained present. The naming and review pages
+assigned PRO-2000 to `/dev/hidraw0` and Cue emulator to `/dev/hidraw1`. Save and
+start persisted both bindings in local `pi-sources.json` and started the inputs.
+
+During the following 23-second observation, the timer decoded 237 additional
+state frames and reported Program 1 stopped at 12:00. The cue source recorded
+six additional recognized events, including both Next and Previous. Both
+sources remained connected without a reported error, and the setup and existing
+video-output pages showed 12:00. These are received-device and UI observations;
+comparison with the physical controller display remains an operator check.
+State snapshots are retained locally in
+`inventories/browser-setup-pi/post-save-state.jsonl` (not a raw USB capture).
+This validates the Pi path, not Windows USB hardware or a real PerfectCue controller.
