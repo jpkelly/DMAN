@@ -28,8 +28,18 @@ The browser opens the operator view. **Open video output** creates a separate
 timer/cue view for HDMI/DisplayPort: move it onto the extended output display and
 press **F**. Minimal display hides routine text while keeping connection warnings.
 Next is a large green right triangle; Previous is a large red left triangle.
-Keep the console open; Ctrl+C stops the server. Unexpected startup errors remain
+Keep the console open while using the app. **Quit application** at the top right
+of the operator page asks for confirmation, stops the inputs and server, and
+exits the executable. Ctrl+C also stops the server. Unexpected startup errors remain
 visible until Enter is pressed when running interactively.
+
+Quit applies to the host application, including when requested from a LAN
+operator page. It does not stop or reprogram the physical timer/controller.
+Connected video pages receive a shutdown notice and app-opened output windows
+close. A manually opened tab or an offline/suspended browser may remain open;
+close it manually. The operator page shows **APPLICATION STOPPED** and can be
+closed. Closing a browser tab alone does not quit the app. Ordinary network
+loss keeps the output open with a stale indication instead of closing it.
 
 From Command Prompt in the executable folder:
 

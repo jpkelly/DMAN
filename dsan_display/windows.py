@@ -252,7 +252,7 @@ def main(argv=None):
         arguments += ['--host', args.host, '--port', str(args.port)]
         arguments += ['--video-settings', str(args.data_dir / 'video-settings.json')]
         logging.info('Source configuration: %s', json.dumps(config))
-        print('Keep this console open. Ctrl+C stops the display. Diagnostics: ' + str(logfile))
+        print('Keep this console open. Use Quit application in the operator page or Ctrl+C to stop. Diagnostics: ' + str(logfile))
         display_main(arguments)
     except (ValueError, OSError, EOFError) as exc:
         logging.error('%s', exc)

@@ -50,8 +50,11 @@ and standalone executable packaging are not covered by this milestone.
    Limitimer source/program and PerfectCue overlay, move the browser to the
    monitor and click Fullscreen. Selecting the PerfectCue source as the main
    source shows cues alone. Separate browser windows can display different
-   sources/programs. Ctrl+C in the console
-   stops the server; the browser marks its last value stale.
+   sources/programs. **Quit application** at the top right of the operator page
+   asks for confirmation, closes connected app-opened video windows, stops the
+   inputs and exits the server. Close the remaining operator tab when it shows
+   **APPLICATION STOPPED**. Closing a tab alone leaves the server running.
+   Ctrl+C in the console also stops the server; the browser marks its last value stale.
 
 Startup option 1 sends exactly one 65-byte HIDAPI output per selected device:
 zero report-ID slot, `8D 00` for Limitimer or `8D 01` for PerfectCue, then 62 zero

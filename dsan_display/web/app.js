@@ -1,6 +1,8 @@
 'use strict';
 const $ = id => document.getElementById(id);
 let sources = [], requestFailed = false, hideTimer, layoutInitialized=false, displayedSourceId=null;
+let applicationQuitting=false, applicationStopped=false;
+const openedOutputs=new Set();
 const preferences = (() => {try{return JSON.parse(localStorage.getItem('dsan-display') || '{}');}catch{return {};}})();
 const outputMode = document.body.classList.contains('output');
 const outputParams = new URLSearchParams(location.search);
@@ -56,6 +58,7 @@ function changeVideoSetting(id){
   render();
 }
 async function flushVideoSettings(){
+  if(applicationQuitting) return;
   if(videoSaving || !Object.keys(pendingVideoChanges).length) return;
   const changes=pendingVideoChanges; pendingVideoChanges={}; videoSaving=true;
   let retryDelay=0;
@@ -141,6 +144,7 @@ function renderConnections(){
   ].filter(Boolean).join('\n\n');
 }
 function render(){
+  if(applicationQuitting) return;
   document.body.classList.toggle('minimal', outputMode && $('minimal').checked);
   renderConnections();
   const videoMode=$('display-mode').value;
@@ -254,13 +258,18 @@ function updateOptions(){
   if(outputMode && outputParams.has('cue')) $('cue-source').value=preferences.cueSource;
 }
 async function poll(){
+  if(applicationStopped) return;
   try{
     const response=await fetch('/api/state',{cache:'no-store',signal:AbortSignal.timeout(1500)});
     if(!response.ok) throw new Error('State request failed');
     const state=await response.json();
-    sources=state.sources;requestFailed=false;updateOptions();receiveVideoSettings(state.video);render();
-  }catch{requestFailed=true;render();}
-  setTimeout(poll,200);
+    if(state.application?.status==='stopping') beginApplicationQuit(true);
+    else if(!applicationQuitting){sources=state.sources;requestFailed=false;updateOptions();receiveVideoSettings(state.video);render();}
+  }catch{
+    if(applicationQuitting){applicationStopped=true;$('status').textContent='APPLICATION STOPPED';$('message').textContent='You can close this page. Start DSANDisplay again to reconnect.';}
+    else{requestFailed=true;render();}
+  }
+  if(!applicationStopped) setTimeout(poll,200);
 }
 for(const id of ['source','cue-source','program']) $(id).addEventListener('change',()=>{save();render();});
 $('confidence-overtime').addEventListener('change',()=>{confidenceInitialized=true;save();render();});
@@ -303,7 +312,9 @@ $('open-output').addEventListener('click',()=>{
   const url=new URL('/output',location.origin);
   url.search=new URLSearchParams({source:$('source').value,cue:$('cue-source').value,program:$('program').value,managed:'1'}).toString();
   try{
-    DsanDisplays.openOutput(url.toString(),$('output-display').value,outputScreens,window.open.bind(window));
+    const popup=DsanDisplays.openOutput(url.toString(),$('output-display').value,outputScreens,window.open.bind(window));
+    for(const previous of openedOutputs) if(previous.closed) openedOutputs.delete(previous);
+    openedOutputs.add(popup);
     save(); displayWindowStatus('');
   }catch(error){displayWindowStatus(error.message);}
 });
@@ -319,7 +330,7 @@ async function fullscreen(){
 }
 if(outputMode){
   outputCloser=DsanDisplays.installOutputExit(window,document,()=>{
-    $('output-window-message').textContent='This tab cannot close itself. Close it with Ctrl+W (Cmd+W on Mac); use Open video output for Escape-to-close windows.';
+    $('output-window-message').textContent=applicationQuitting?'Application is shutting down. You can close this tab.':'This tab cannot close itself. Close it with Ctrl+W (Cmd+W on Mac); use Open video output for Escape-to-close windows.';
     $('output-window-message').hidden=false;
   });
   $('output-fullscreen').addEventListener('click',fullscreen);
@@ -328,6 +339,40 @@ if(outputMode){
   });
   if(outputParams.get('managed')==='1') fullscreen();
 }
+
+let quitChannel=null;
+try{if(typeof BroadcastChannel==='function') quitChannel=new BroadcastChannel('dsan-quit:'+location.host);}catch{}
+function beginApplicationQuit(notify=false){
+  if(applicationQuitting) return;
+  applicationQuitting=true;
+  clearTimeout(videoSaveTimer);
+  pendingVideoChanges={};
+  $('monitor').className='stale';
+  $('status').textContent='APPLICATION SHUTTING DOWN';
+  $('message').textContent='Stopping inputs and closing the application…';
+  $('cue-overlay').hidden=true;
+  $('clock').textContent='--:--';$('clock').dataset.cue='';$('clock').dataset.idle='false';
+  document.querySelectorAll('button,input,select').forEach(control=>{control.disabled=true;});
+  if(notify && quitChannel) quitChannel.postMessage('quit');
+  for(const popup of openedOutputs){
+    try{if(!popup.closed && popup.location.origin===location.origin && popup.location.pathname==='/output') popup.close();}catch{}
+  }
+  openedOutputs.clear();
+  if(outputMode && outputCloser) outputCloser();
+}
+if(quitChannel) quitChannel.onmessage=event=>{if(event.data==='quit') beginApplicationQuit();};
+$('quit-application').addEventListener('click',async()=>{
+  if(applicationQuitting || !window.confirm('Quit DSAN application? This stops all USB inputs and video outputs, including those on other computers.')) return;
+  $('quit-application').disabled=true;
+  $('quit-error').hidden=true;
+  try{
+    const response=await fetch('/api/quit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true}),signal:AbortSignal.timeout(3000)});
+    if(!response.ok) throw new Error('Shutdown request was rejected');
+    beginApplicationQuit(true);
+  }catch(error){
+    if(!applicationQuitting){$('quit-application').disabled=false;$('quit-error').textContent='Could not confirm shutdown. '+error.message;$('quit-error').hidden=false;}
+  }
+});
 
 $('fullscreen').addEventListener('click',fullscreen);
 document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='f'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();fullscreen();}});

@@ -1,9 +1,11 @@
 import argparse
 import hashlib
 import json
+import logging
 import re
 import socket
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -25,11 +27,43 @@ class Server(ThreadingHTTPServer):
         super().__init__(address, handler)
         self.allowed_hostnames = local_hostnames()
         self.video_settings = VideoSettings()
+        self.workers = {}
+        self.control_lock = threading.Lock()
+        self.quitting = threading.Event()
+        self.cleanup_lock = threading.Lock()
+        self.workers_stopped = False
+        self.quit_notice_seconds = 2.0
 
     def server_bind(self):
         if self.address_family == socket.AF_INET6 and self.dual_stack:
             self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
         super().server_bind()
+
+    def stop_workers(self):
+        with self.cleanup_lock:
+            if self.workers_stopped:
+                return
+            for worker in self.workers.values():
+                try:
+                    worker.stop()
+                except Exception:
+                    logging.exception('Could not stop a source cleanly during shutdown')
+            self.workers_stopped = True
+
+    def request_quit(self):
+        with self.control_lock:
+            if self.quitting.is_set():
+                return
+            self.quitting.set()
+        threading.Thread(target=self._finish_quit, name='dsan-shutdown', daemon=True).start()
+
+    def _finish_quit(self):
+        deadline = time.monotonic() + self.quit_notice_seconds
+        self.stop_workers()
+        # Keep HTTP alive briefly so connected video clients can see the explicit
+        # shutdown notice. Ordinary network loss must never mean "close output".
+        time.sleep(max(0, deadline - time.monotonic()))
+        self.shutdown()  # Must run outside the serve_forever thread.
 
 
 def create_server(host, port):
@@ -64,7 +98,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/api/state':
             self.reply({'sources': [w.source.snapshot() for w in self.server.workers.values()],
-                        'video': self.server.video_settings.snapshot()})
+                        'video': self.server.video_settings.snapshot(),
+                        'application': {'status': 'stopping' if self.server.quitting.is_set() else 'running'}})
             return
         files = {'/': ('index.html', 'text/html; charset=utf-8'),
                  '/output': ('index.html', 'text/html; charset=utf-8'),
@@ -89,7 +124,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.valid_host() or self.headers.get('Origin') != expected:
             self.reply({'error': 'Same-origin request to this server required'}, status=403)
             return
-        if self.path not in ('/api/restart-replay', '/api/video-settings'):
+        if self.path not in ('/api/restart-replay', '/api/video-settings', '/api/quit'):
             self.reply({'error': 'Not found'}, status=404)
             return
         try:
@@ -97,10 +132,19 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < length <= 1024:
                 raise ValueError('Invalid request size')
             data = json.loads(self.rfile.read(length))
-            if self.path == '/api/video-settings':
-                self.reply(self.server.video_settings.update(data))
+            if self.path == '/api/quit':
+                if not isinstance(data, dict) or data.get('confirm') is not True:
+                    raise ValueError('Explicit quit confirmation required')
+                self.server.request_quit()
+                self.reply({'ok': True, 'status': 'stopping'})
                 return
             with self.server.control_lock:
+                if self.server.quitting.is_set():
+                    self.reply({'error': 'Application is shutting down'}, status=409)
+                    return
+                if self.path == '/api/video-settings':
+                    self.reply(self.server.video_settings.update(data))
+                    return
                 worker = self.server.workers[data['id']]
                 worker.restart_replay()
             self.reply({'ok': True})
@@ -187,7 +231,7 @@ def main(argv=None):
         local_name = socket.gethostname().split('.')[0].lower() + '.local'
         print(f'Local-network name: http://{local_name}:{server.server_port} (where local name resolution is available)', flush=True)
     if args.host != '127.0.0.1':
-        print('LAN access enabled. Devices on this network can view data, change video settings and restart replay.', flush=True)
+        print('LAN access enabled. Devices on this network can view data, change video settings, restart replay and quit the application.', flush=True)
     if args.open_browser:
         webbrowser.open(f'http://{browser_host}:{server.server_port}')
     try:
@@ -195,9 +239,9 @@ def main(argv=None):
     except KeyboardInterrupt:
         pass
     finally:
+        server.stop_workers()
         server.server_close()
-        for worker in workers.values():
-            worker.stop()
+        print('DSAN application stopped.', flush=True)
 
 
 if __name__ == '__main__':

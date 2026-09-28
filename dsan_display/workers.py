@@ -33,6 +33,7 @@ class Worker:
         if self.process and self.process.poll() is None:
             self.process.kill()
             self.process.wait(timeout=3)
+        self.source.end('disconnected', 'Source stopped')
 
     def restart_replay(self):
         if self.source.kind != 'replay':
