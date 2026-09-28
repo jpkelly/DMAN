@@ -126,11 +126,15 @@ def guided_configure(read=input, enumerate_devices=None):
     print('Connect each dongle to its intended controller; keep those cables unchanged.')
     print("Choose the role matching the controller and the dongle's internal hardware setting.")
     print('Enter q at any prompt to cancel without replacing the saved setup.')
-    while True:
-        ask('Unplug all DSAN dongles from USB, then press Enter: ')
-        if not inventory_by_path():
-            break
-        print('DSAN devices are still connected. Unplug them before continuing.')
+    connected_setup = bool(inventory_by_path())
+    if connected_setup:
+        print('Dongles are already connected. Keep them connected; we will identify one at a time by unplugging and reconnecting it.')
+    else:
+        while True:
+            ask('With all DSAN dongles unplugged from USB, press Enter: ')
+            if not inventory_by_path():
+                break
+            print('DSAN devices are still connected. Unplug them before continuing.')
 
     sources = []
     paired = set()
@@ -151,7 +155,37 @@ def guided_configure(read=input, enumerate_devices=None):
             continue
         role = 'limitimer' if choice == '1' else 'perfectcue'
         role_name = 'Limitimer' if choice == '1' else 'PerfectCue'
+        if connected_setup:
+            before = set(inventory_by_path())
+            if paired - before:
+                raise ValueError('A paired dongle is missing; setup stopped without replacing the saved configuration')
+            if not before - paired:
+                print('All connected dongles are paired. Connect an additional dongle or finish setup.')
+                continue
+            while True:
+                ask(f'Unplug ONLY the next {role_name} USB dongle. Leave all others connected, then press Enter: ')
+                remaining = set(inventory_by_path())
+                removed, added = before - remaining, remaining - before
+                if added or len(removed) > 1 or removed & paired:
+                    raise ValueError('Unexpected USB change or an already-paired dongle was removed; setup stopped without guessing')
+                if not removed:
+                    print('No dongle disappeared yet. Unplug only the requested unit and retry.')
+                    continue
+                break
+            while True:
+                ask(f'Reconnect that SAME {role_name} dongle, preferably to the same USB port, then press Enter: ')
+                current = set(inventory_by_path())
+                added = current - remaining
+                if remaining - current or len(added) > 1:
+                    raise ValueError('Other USB connections changed during reconnect; setup stopped without guessing')
+                if not added:
+                    print('The dongle has not reappeared as a separate HID device yet. Check the connection and retry.')
+                    continue
+                path = added.pop()
+                break
         while True:
+            if connected_setup:
+                break
             ask(f'Plug in ONLY the next {role_name} dongle. Leave paired dongles connected, then press Enter: ')
             current = inventory_by_path()
             if paired - current.keys():

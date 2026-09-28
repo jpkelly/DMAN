@@ -10,10 +10,11 @@ and browser renderer, not a new native window framework.
 
 First launch uses guided pairing; no labelled USB ports are needed:
 
-1. Unplug DSAN USB dongles when prompted, keeping their controller cables attached.
-2. Choose Limitimer or PerfectCue for the next unit, then connect only that dongle.
-3. The app identifies the newly appeared HID path and asks for a friendly name.
-4. Leave it connected and repeat for the next dongle, then finish setup.
+- If dongles are already connected, keep them connected. Choose the next unit's
+  role, unplug only that unit when prompted, then reconnect it. The wizard matches
+  the disappearance and reappearance while checking that peers remain present.
+- If none are connected, add them one at a time when prompted.
+- Give each unit a friendly name, repeat for the other role, and finish setup.
 
 Normal startup initializes each paired unit for its assigned role. The role must
 match the attached controller and internal hardware configuration; this is guided

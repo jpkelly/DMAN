@@ -111,3 +111,41 @@ claim to query the hardware role. Startup initialization follows only after the
 complete mapping validates. This avoids relying on serial strings or arbitrary
 list ordering. The RequestID investigation was paused before sending that query;
 no ID query or SetID command was used for this setup change.
+
+## Live guided-pairing test with both devices already connected
+
+The production `guided_configure` function was exercised on the Pi through
+`tools/pi_pairing_test.py`, with a real Linux sysfs inventory callback. The Windows
+HID driver was not involved. A staged copy kept the existing capture/display
+installation untouched; the session records the exact launcher SHA-256, monotonic
+prompt/answer events and inventories. Pi wall-clock skew remains irrelevant to
+these monotonic step offsets.
+
+Both units were present initially. The owner unplugged only Limitimer; the wizard
+observed that device disappear while cue remained present. The running display
+also showed Limitimer disconnected with frozen values, while cue reports continued
+increasing. Reconnecting the same unit bound `/dev/hidraw0` as PRO-2000/Limitimer.
+The owner then unplugged only PerfectCue; the paired Limitimer stayed present.
+Reconnecting that unit bound `/dev/hidraw1` as Cue emulator/PerfectCue. The wizard
+completed and validated both assignments with no output reports during pairing
+and no replacement of the live configuration.
+
+Evidence is preserved under `inventories/pi-guided-pairing/connected-session` and
+on the Pi under `/home/pi/dsan-investigation/pairing-harness/connected-session`.
+These Linux test paths are not Windows HID paths and must not be copied into a
+Windows source configuration.
+
+A separate startup check then used the wizard's assigned roles: one `8D 00`
+output to the Limitimer path, one `8D 01` output to the cue path. Both writes
+returned all 65 API bytes. Each capture contains 25,008 raw bytes and passed
+integrity validation. After discarding the opening second, the timer capture
+contained 252 complete state frames (absent checksums), and the cue capture
+contained two events (Next and Previous), with no cross-protocol classifications.
+Both live readers were restarted using the validated assignments and are receiving
+independently again.
+
+This validates the connected-at-launch pairing workflow with these Pi devices,
+including the emulator cue path. It does not validate Windows enumeration, real
+PerfectCue hardware, same-hub operation, or automatic reconnect. The automated
+suite also covers multiple unexpected removals, removal of an already-paired
+peer, duplicate paths and a changed path on reconnect.

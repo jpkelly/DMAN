@@ -39,8 +39,9 @@ and standalone executable packaging are not covered by this milestone.
 3. Close DSAN VideoClock and any other reader of these dongles. Connect each
    controller to its own dongle with the correct internal **Limitimer/PerfectCue**
    hardware setting. USB IDs alone cannot determine that setting.
-4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). First launch guides you through
-   unplugging DSAN USB devices and adding one at a time. Choose the next unit's
+4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). First launch checks whether dongles are already connected. If so, it identifies
+   each by a brief unplug/reconnect while peers stay connected. Otherwise it adds
+   dongles one at a time. Choose the next unit's
    actual role (Limitimer/PerfectCue), plug it in and assign a name. The newly
    appeared HID path is paired automatically; no port labels are required.
    Normal startup sends each selected role's reviewed initialization. Advanced
@@ -234,3 +235,8 @@ presentation. Appearance is shared across output windows; source/program binding
 remain individual. Settings persist in `video-settings.json` under the app data
 folder. This supersedes earlier notes saying appearance changes require reopening
 an output or stay local to a browser.
+
+Already-connected pairing is implemented and tested with real Pi enumeration.
+Removing multiple devices, removing an already-paired peer, or introducing extra
+connections during an identification step aborts without guessing or replacing
+the saved configuration. Windows USB behavior remains a separate hardware test.
