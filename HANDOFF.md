@@ -1,4 +1,9 @@
-**Latest Windows build:** Private repository https://github.com/jpkelly/DMAN
+**Current resume state:** Read [MEMORY.md](MEMORY.md) first. Work paused on
+2026-09-27 after the real Pi browser-setup test passed and the user confirmed the
+displayed timer value. Its build, test counts, and next steps supersede the
+historical snapshots below.
+
+**Historical Windows build:** Private repository https://github.com/jpkelly/DMAN
 is connected as origin. [Run 36349142395](https://github.com/jpkelly/DMAN/actions/runs/36349142395) built
 commit `954e8ae`: 74 tests and frozen executable self-test passed on Windows x64.
 The unsigned executable/package is downloaded under `dist/windows-build-36349142395`.
