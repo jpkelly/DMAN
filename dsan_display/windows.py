@@ -104,8 +104,8 @@ def configure(devices, read=input):
 def guided_configure(read=input, enumerate_devices=None):
     """Assign roles by an observed plug-in sequence, without trusting serial IDs.
 
-    Enumeration only: no handles are opened and no initialization is sent until
-    the complete configuration is validated and the display starts.
+    Enumeration only: no streaming handles are opened and no initialization is
+    sent until the complete configuration validates and the display starts.
     """
     enumerate_devices = enumerate_devices or dsan_devices
 
