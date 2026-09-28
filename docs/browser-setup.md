@@ -47,8 +47,8 @@ During the following 23-second observation, the timer decoded 237 additional
 state frames and reported Program 1 stopped at 12:00. The cue source recorded
 six additional recognized events, including both Next and Previous. Both
 sources remained connected without a reported error, and the setup and existing
-video-output pages showed 12:00. These are received-device and UI observations;
-comparison with the physical controller display remains an operator check.
+video-output pages showed 12:00. The operator confirmed that 12:00 matched the
+physical timer controller display, completing this browser pairing check.
 State snapshots are retained locally in
 `inventories/browser-setup-pi/post-save-state.jsonl` (not a raw USB capture).
 This validates the Pi path, not Windows USB hardware or a real PerfectCue controller.
