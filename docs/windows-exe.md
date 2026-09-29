@@ -1,5 +1,9 @@
 # DSAN Display executable
 
+> **Validation update — 2026-09-29:** The project owner confirms Windows hardware
+> validation passed for v0.1.0. Earlier hardware-pending statements below describe
+> the build and development history. The executable remains unsigned.
+
 ## Running the package on Windows
 
 Download **DSANDisplay-windows-x64.zip** from

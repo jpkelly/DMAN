@@ -1,5 +1,9 @@
 # Windows deployment milestone
 
+> **Validation update — 2026-09-29:** The project owner confirms Windows hardware
+> validation passed for v0.1.0. Earlier hardware-pending statements below describe
+> the build and development history. The executable remains unsigned.
+
 Windows is now the primary production target, specifically **one Limitimer dongle
 and one PerfectCue dongle operating simultaneously**. Development can continue on the
 Mac using the real capture fixtures and the existing Pi preview. Native Mac USB

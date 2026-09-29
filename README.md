@@ -73,9 +73,9 @@ requires no vendor DLL or replacement USB driver. The initial release is unsigne
 
 Live Limitimer data and simultaneous timer/cue inputs have been verified through
 the Raspberry Pi path. Next/Previous cues have been verified with a cue emulator
-and dongle. Windows builds pass automated tests and a packaged-app smoke test;
-physical Windows USB/video output and a real PerfectCue controller still need
-validation. PerfectCue Blank is not supported by the verified mapping.
+and dongle. Windows builds pass automated tests and a packaged-app smoke test.
+**Windows hardware validation passed**, confirmed by the project owner on
+2026-09-29. Real PerfectCue controller validation has not been separately recorded. PerfectCue Blank is not supported by the verified mapping.
 
 macOS/Linux are useful for capture replay and Pi-based input. Direct macOS USB
 has unresolved compatibility issues. See the [display guide](docs/display.md)
