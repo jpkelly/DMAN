@@ -32,6 +32,21 @@ PerfectCue Next/Previous framing is verified with the owner’s emulator and don
 the cue overlay and cue-only view identify real PerfectCue as untested. A local one-second cue hold is a presentation setting, not measured
 hardware timing. Cue silence is not treated as a verified heartbeat.
 
+## macOS/Linux replay setup
+
+Use Python 3.11+ from the repository root:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m dsan_display --replay "Timer=/path/to/capture" --open-browser
+```
+
+Supply a recorded capture directory. Replay requires no connected hardware.
+For capture, annotation, and verification commands, see the
+[capture reference](development-reference.md#capture).
+
 ## Run
 
 Use the VS Code task **DSAN: confidence display**, or from the workspace root:
