@@ -25,8 +25,8 @@ and display small and portable; there is no new UI framework.
 74 tests and the frozen executable smoke check. Physical Windows USB testing
 remains outstanding. The owner confirms prior vendor-software
 operation with this Limitimer dongle. That does not verify our Windows backend.
-The initial setup targets Windows 10/11 x64 with Python 3.13 x64; Windows ARM64
-and standalone executable packaging are not covered by this milestone.
+The initial setup targets Windows 10/11 x64 with Python 3.13 x64; Windows ARM64 is not covered. For the packaged executable, see the
+[Windows executable guide](windows-exe.md).
 
 ## Setup and launch
 

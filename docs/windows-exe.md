@@ -2,7 +2,9 @@
 
 ## Running the package on Windows
 
-Extract the package and double-click **DSANDisplay.exe**. Python does not need to
+Download **DSANDisplay-windows-x64.zip** from
+[Releases](https://github.com/jpkelly/DMAN/releases), extract it, and double-click
+**DSANDisplay.exe**. Python does not need to
 be installed on the operating machine. Keep the `licenses` folder with the
 distribution. The executable also embeds those notices. A normal browser is
 still required. Device setup and the display run in that browser. A console
@@ -91,11 +93,11 @@ separate matters; this packaging change does not assign a new application licens
 ## Building without a local Windows machine
 
 The repository includes a manual **Build Windows executable** GitHub Actions
-workflow using a Windows x64 runner. Once this code is in a GitHub repository,
-run that workflow from its Actions page and download `DSANDisplay-windows-x64`.
-No release is automatically published. The project repository is
-[private jpkelly/DMAN](https://github.com/jpkelly/DMAN). Build results and artifacts
-are available to authorized repository users from its Actions page.
+workflow using a Windows x64 runner. Run that workflow from the repository’s Actions page and download
+`DSANDisplay-windows-x64`. Workflow runs do not automatically publish releases.
+Published packages are available from
+[Releases](https://github.com/jpkelly/DMAN/releases); workflow artifacts require
+a GitHub login and expire after 14 days.
 
 PyInstaller is not a cross-compiler: a macOS run cannot create the Windows exe.
 See its [platform guidance](https://pyinstaller.org/en/stable/usage.html).

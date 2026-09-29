@@ -1,348 +1,114 @@
-# DSAN Limitimer and PerfectCue display
+# DSAN Display
 
-**Primary deployment target: Windows, with one Limitimer dongle and one PerfectCue
-dongle connected simultaneously.** Each has an explicit role, exact HID path,
-independent initialization and decoder. See [Windows setup](docs/windows.md).
-Limitimer has real controller captures; Next/Previous cue framing has emulator +
-dongle fixtures. Real PerfectCue and Windows USB hardware remain untested. The task
-**DSAN: mixed dongle preview** reads both connected Pi dongles simultaneously.
+Browser-based confidence displays for DSAN Limitimer timers and PerfectCue cues.
+Connect your controllers through their USB dongles, pair each input, and show timers
+and cues on local monitors or devices on your LAN.
 
-The first confidence display is running on macOS, with live Pi USB input and
-capture replay. Open `http://127.0.0.1:8765` on the Mac while the **DSAN:
-confidence display** task is running. See [display setup and limits](docs/display.md).
-Basic stopped/running/paused/zero/program-selection behavior now has real fixtures;
-direct Mac USB and full production/platform validation remain outstanding.
+- Use Limitimer and PerfectCue inputs simultaneously, with independent source status.
+- Choose timer programs and cue sources per display.
+- Open dedicated video outputs with timer-only, cues-only, or combined layouts.
+- Adjust output size, warning threshold, and overtime presentation live.
+- Replay recorded captures without connected hardware.
 
-**Windows executable built:** [successful Windows build](https://github.com/jpkelly/DMAN/actions/runs/36349142395) and
-[build/run instructions](docs/windows-exe.md). It bundles Python, native HID support
-and browser assets into `DSANDisplay.exe`. All 74 tests and the frozen application
-smoke check passed on Windows Server 2022 x64. Physical USB/video output and real
-PerfectCue controller testing remain outstanding; this first executable is unsigned.
+## Quick start — Windows
 
-**LAN access:** the GUI now listens on network interfaces by default (IPv4 and
-IPv6 where supported). Startup prints connection URLs; Ethernet or Wi-Fi can be
-used. `--host 127.0.0.1` restores local-only access. See [LAN access and scope](docs/display.md#lan-access).
+1. Download **DSANDisplay-windows-x64.zip** from [Releases](https://github.com/jpkelly/DMAN/releases),
+   extract it, and run **DSANDisplay.exe**. Keep the included `licenses` folder.
+   Python is bundled; you only need a browser.
+2. Close other software using the dongles. Connect each controller to a dongle
+   configured for its **Limitimer** or **PerfectCue** role.
+3. Follow the browser pairing wizard. Choose each dongle's role and name, then
+   unplug/reconnect it when prompted. Select **Review paired devices**, then
+   **Save and start inputs**.
+4. Compare the received timer and cues with your controllers, then select
+   **Open confidence display**.
 
-**Core requirement: multiple dongles at once.** Each display will select an
-independent source and timer program, with separate input, decoding, capture and
-stale-data status. The owner observed conflicts with multiple dongles in the
-existing software. See the [multi-dongle requirements and design](docs/multiple-dongles.md).
-The owner also reports internal switches/jumpers select Limitimer versus
-PerfectCue operation. Each source's confirmed hardware role must match its
-software initialization and decoder; matching USB IDs do not establish that role.
-The capture CLI records one device per invocation. The display now has separate
-source workers and program selection; persistent identity/reconnect management
-and real multi-dongle hardware testing remain outstanding.
+Later launches reuse your saved configuration. **Device setup** reopens pairing.
+The selected role must match the dongle's internal hardware configuration; USB
+identifiers cannot distinguish the roles.
 
-**Latest result:** offline analysis of the supplied PerfectCue installer and
-DSAN's Limitimer installer recovered the actual HID startup/read path. Both use
-`0483:101A` and the same USB library. The Limitimer path sends `8D 00` in a HID
-output report after opening, then reads a count-prefixed byte stream. The owner
-explicitly confirms this dongle has worked with a Limitimer. See the
-[deep research report](docs/dongle-research.md) and
-[reproducible installer audit](tools/audit_dsan_installer.py).
-No hardware access or device writes occurred during that offline research.
-The runtime now has an explicit initialization-output option; it remains
-receive-only by default. Hardware attempts are documented below.
+## Using the display
 
-## Current status (2026-09-27)
+Choose a Limitimer source and program, then add a PerfectCue overlay if needed.
+Separate browser windows can use different source/program selections.
 
-This section supersedes conflicting statements in the dated history below.
+**Open video output** opens a dedicated presentation window. Move it to your
+extended display and press **F** for fullscreen. On supported local Chrome/Edge
+browsers, **Choose display** lets you select a monitor first. **Escape** closes
+an app-opened output window.
 
-- **Production priority (updated):** Windows direct USB, existing DSAN firmware,
-  one Limitimer dongle plus one PerfectCue dongle. Native Mac USB investigation
-  is deferred; Mac replay/Pi preview remains useful for development. No Pi or
-  Mac driver workaround is required by the intended Windows product.
+**Video layout** and **Video output settings** control presentation across open
+video outputs. Source and program selections remain individual to each output.
+Next appears as a green right triangle; Previous as a red left triangle.
 
-- **Pi breakthrough:** with `0483:101a:d` active, the dongle enumerates as HID,
-  answers live GET_STATUS, and streams data. The full 47-byte report descriptor
-  confirms 8-byte input and 64-byte output/feature reports without report IDs.
-  The reviewed `8D 00` output completed successfully; input was already flowing
-  before it. A labelled stopped-at-1:00 capture now matches P1 selected, stopped,
-  total 60 and elapsed 0 across 110 consecutive states after an old-data prefix.
-  Running, pause, zero and program selection also have labelled captures. P2 at
-  32:00 matched while P1 remained paused at 0:52. Frames have absent checksums. See
-  [Pi results and capture-quality notes](docs/pi5-investigation.md).
+Keep the application console open. Use **Quit application** in the operator page
+or **Ctrl+C** in the console to stop the app; closing a browser tab leaves it running.
 
-- **Latest diagnostic host:** the owner has now provided a ready Pi 5 at
-  `pi@pi5start.local`. It is prepared with a temporary Linux USB quirk and a
-  time-limited enumeration capture. See [Pi investigation](docs/pi5-investigation.md).
-  This supersedes the earlier preference to avoid Pi setup; the Mac/Windows
-  application goal is unchanged.
+### LAN access
 
-- **Hardware:** DSAN PRO-2000 controller, RJ45 directly to a single-RJ45
-  VC-2000PC dongle, USB via an Anker USB-C adapter/hub. The owner confirms this
-  dongle has worked with a Limitimer. Internal DIP switches/jumpers reportedly
-  select Limitimer versus PerfectCue; their positions are not yet documented.
-- **Mac receive problem:** live control requests and attempted `8D 00`
-  initialization time out. Earlier enumeration captures locate the first
-  observed failure at the interface-string request; the exact firmware fault
-  remains unproven. Passive input yields at most a fragment, not sustained data.
-- **Alternate-port comparison:** moving the adapter changed the observed USB
-  bus from 0 to 1 but reproduced the index-92 enumeration timeout, failed live
-  status/initialization requests and one-report-then-silence behavior.
-- **Authorization (latest):** the owner explicitly approved sending dongle
-  messages and said not to ask again for each message. This supersedes the
-  earlier per-test initialization approval requirement. Continue bounded,
-  logged diagnostics rather than arbitrary command scanning.
-- **Decoding layers (new):** USB report → stream
-  ([hid_stream.py](dsan_capture/hid_stream.py)) and Limitimer framing/state
-  decoding ([limitimer.py](dsan_capture/limitimer.py)). Verified against upstream
-  RS-485 Limitimer captures; our dongle has only produced consistent fragments.
-  See the [protocol notes](docs/limitimer-protocol.md).
-- **Implemented:** opt-in, logged initialization output (`--send-limitimer-init`).
-- **Display implemented:** live Pi-over-SSH decoding, per-source state, local
-  browser UI, fullscreen, program selection, local warning/overtime settings,
-  replay and explicit stale/disconnected state. Native HID input is available but
-  not hardware-validated here. Persistent reconnect routing is not implemented.
-- **Not tested:** Windows, Intel macOS, and any real multi-dongle operation.
-- **2026-09-27 hardware:** the one authorized `8D 00` output timed out; the
-  dongle then answered no live control requests. A replug watch shows the
-  dongle stops responding during macOS's own enumeration, at its request for the
-  dongle's bogus interface string (index 92), before any application runs.
-  Ultraleap has been uninstalled at the owner's request. See the
-  [HID investigation](docs/hid-investigation.md).
+Open a network URL printed in the console on another computer or tablet.
+Allow the app through Windows Firewall on your intended private network if needed.
 
-## History: verified on this Mac
+LAN access is enabled by default and has no login. Connected users can view data,
+change video settings, configure inputs, and quit the application. Use a trusted
+network, or restrict access to the host PC:
 
-Dated observations in order. Later confirmations are noted inline.
+```bat
+DSANDisplay.exe --host 127.0.0.1
+```
 
-On 2026-09-26, macOS 15.6.1 / Apple Silicon enumerated a device named
-`VideoClock USB Interface by DSan`, VID:PID `0483:101A`, serial-string
-`Ver 0.17 10/03/14`. Its USB interface is HID class `03`, with interrupt-IN
-endpoint `0x81`, maximum packet size 8 bytes. No matching serial port or HIDAPI
-entry appeared. Direct libusb input access succeeded and returned one 8-byte
-all-zero report during a two-second check. That report is not a verified
-timer-state fixture. (Limitimer compatibility was later confirmed by the owner;
-see the current status above.)
+### Disconnected inputs
 
-The user identified the controller as **PRO-2000**, with its RJ45 connected
-directly to the **VC-2000PC** dongle's RJ45. Unplugging USB removed exactly the
-DSan device and its HID-class interface; serial and HIDAPI inventories did not
-change. Reconnection restored that same device/interface, completing USB
-attribution. HID report layout and timer payload are still unconfirmed. (DSAN's
-two-RJ45 VC-2000-2 documentation was not used to establish compatibility; the
-owner later confirmed Limitimer use of this single-RJ45 dongle directly.)
+Lost timer input freezes the last received value and marks it stale/disconnected;
+the display does not continue a local countdown. Reconnect the dongle and restart.
+Changing USB ports or hubs may require pairing again. Check source assignments
+after reconnecting or moving hardware.
 
-The first user-labelled capture (program 1 stopped at 1:00) received one report,
-`07 81 10 83 00 00 81 00`, in 10 seconds. Integrity and replay checks passed;
-this is not enough to verify timer framing or fields.
-The following 10-second running capture received no bytes, although the dongle
-remained visible in the OS USB inventory. The cause is unresolved.
-Subsequent captures at a reported 0:00 and after Repeat to 1:00 also received no
-bytes; the latter used a longer 1000 ms USB input timeout. Further state captures
-are on hold pending investigation of the receive path.
-A libusb diagnostic confirmed successful interface access followed by interrupt
-read timeouts. The owner has since confirmed prior Limitimer operation of this
-dongle; it has not yet been reproduced on this Mac.
-No Windows machine is currently available. Legacy DSAN documentation explicitly
-distinguishes PerfectCue and Limitimer dongle configurations; see the source links
-in the investigation notes. The owner reports internal switches/jumpers select
-the role; their exact positions have not been inspected or documented.
-The only available USB-C adapter is Anker; a hub-bypass comparison is currently
-unavailable. No evidence singles out the adapter as the cause. A
-[DSAN compatibility brief](docs/dsan-compatibility-brief.md) records the questions
-needed to investigate the device configuration and input interface.
-A later full dongle power cycle restored one different 8-byte report, followed
-by silence. A subsequent detached two-minute recording completed with 120 empty
-reads and no received bytes. The user reported 0:00 while it was active; exact
-button and zero-crossing timing remains unverified. An earlier interactive PTY
-attempt ended unexpectedly and is explicitly preserved as incomplete. Timer
-decoding remains blocked on useful input. Later offline installer analysis found
-that the vendor application sends an initialization output these captures never
-sent; see the current status above.
+Settings and logs are stored in `%LOCALAPPDATA%\DSANDisplay`.
 
-HID investigation found a separate Mac process, **Ultraleap Hand Tracking**,
-repeatedly attempting to open the DSAN device. This is a potential conflict, not
-a proven cause. See [HID investigation](docs/hid-investigation.md). A comparison
-with that service stopped was authorized and performed. After a full dongle power
-cycle, one 8-byte report arrived, then silence; the descriptor request still timed
-out. This did not establish Ultraleap as the cause. **Ultraleap has been restored
-and verified running.** The first restoration prompt was accidentally canceled;
-the owner authorized a retry, which succeeded. See the investigation for details.
+## Compatibility
 
-See [investigation notes](docs/investigation.md) for source evidence and the next
-hardware steps, and [third-party notices](docs/third-party.md) before code reuse.
+The packaged app targets **Windows 10/11 x64**. It uses native HID access and
+requires no vendor DLL or replacement USB driver. The initial release is unsigned.
 
-## Stack and setup
+Live Limitimer data and simultaneous timer/cue inputs have been verified through
+the Raspberry Pi path. Next/Previous cues have been verified with a cue emulator
+and dongle. Windows builds pass automated tests and a packaged-app smoke test;
+physical Windows USB/video output and a real PerfectCue controller still need
+validation. PerfectCue Blank is not supported by the verified mapping.
 
-Python 3.11+ keeps transport and file handling small and portable. pySerial
-covers serial adapters, HIDAPI covers OS-exposed HID devices, and PyUSB/libusb
-provides descriptor inspection and explicit interrupt-IN access when needed.
-Only the Python standard library is used for storage, replay, and tests. A UI
-stack will be selected after decoding is verified; these modules have no UI
-dependency. Windows and Intel macOS are targets, **not tested platforms**.
+macOS/Linux are useful for capture replay and Pi-based input. Direct macOS USB
+has unresolved compatibility issues. See the [display guide](docs/display.md)
+for these configurations.
 
-macOS/Linux:
+## Run from source
+
+On Windows, install **Python 3.13 x64** with the `py` launcher, then run
+[Setup Windows.cmd](Setup%20Windows.cmd) followed by
+[Start DSAN.cmd](Start%20DSAN.cmd). See [Windows setup](docs/windows.md) for details.
+
+For replay on macOS/Linux, use Python 3.11+:
 
 ```sh
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
 source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m dsan_display --replay "Timer=/path/to/capture" --open-browser
 ```
 
-Windows PowerShell:
+Supply a recorded capture directory. Raw capture, annotation, and verification
+commands are documented in the [capture reference](docs/development-reference.md#capture).
 
-```powershell
-py -3 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\Activate.ps1
-```
+## Documentation
 
-If activation is unavailable, run the environment's Python executable directly.
-All subsequent examples use `python` from that environment. Native USB inventory
-does not require libusb. PyUSB inspection/direct capture does require it; this
-Mac already had Homebrew libusb. The utility never installs or replaces device
-drivers. Windows access through HIDAPI or libusb must be evaluated on Windows;
-do not assume a driver change is required. Linux support is best effort.
+- [Windows executable guide](docs/windows-exe.md) — options, packaging, and builds
+- [Display guide](docs/display.md) — sources, replay, LAN access, and output controls
+- [Device pairing](docs/browser-setup.md) — setup behavior and validation
+- [Multiple dongles](docs/multiple-dongles.md) — source identity and reconnect limits
+- [Development reference](docs/development-reference.md) — capture CLI and investigation history
+- [Protocol notes](docs/limitimer-protocol.md) and [dongle research](docs/dongle-research.md)
+- [Third-party notices](docs/third-party.md)
 
-## Discover and compare
-
-```sh
-python -m dsan_capture discover --out inventories/before.json --note "Dongle disconnected"
-# Connect only the dongle USB after recording the disconnected inventory.
-python -m dsan_capture discover --out inventories/after.json --note "Dongle connected"
-python -m dsan_capture diff inventories/before.json inventories/after.json
-python -m dsan_capture inspect-usb --vid 0x0483 --pid 0x101a --out inventories/descriptors.json
-```
-
-Use truthful notes matching the connection state. Outputs never overwrite an
-existing file. Inventories include all visible serial/HID/USB devices, identifiers,
-and collection errors. `diff` compares records; reconnecting may change paths or
-USB addresses. An added device does not establish its electrical compatibility.
-
-The actual initial snapshots are under the ignored [inventories directory](inventories/).
-The connected/disconnected/reconnected comparison and refreshed descriptors are saved.
-
-To inspect the advertised HID report descriptor after refreshing the device's
-bus/address:
-
-```sh
-python -m dsan_capture inspect-hid --vid 0x0483 --pid 0x101a --bus 1 --address 4 --interface 0 --out inventories/hid-report.json
-```
-
-This uses standard device-to-host GET_DESCRIPTOR for the report descriptor. It
-does not issue HID feature/output reports or device initialization commands. The
-exact request, advertised length, returned bytes (if any), and errors are saved.
-It exits nonzero on a timeout or short read. PyUSB may claim the selected
-interface for this read, then releases it; it never detaches a driver.
-
-## Capture
-
-Choose exactly one transport. No autodetection-based opening, baud scanning,
-protocol commands, feature reports, firmware writes, kernel-driver detachment,
-or USB configuration changes are implemented.
-
-For the currently observed USB device, refresh descriptors first; bus/address
-can change. This example must be filled with the **observed** model and path:
-
-```sh
-python -m dsan_capture capture --out captures/stopped-0100 --label "Stopped at 1:00; program recorded in notes" --timer-model "ACTUAL MODEL" --signal-path "ACTUAL controller port -> cable -> VC-2000PC -> USB" --seconds 10 usb-interrupt --vid 0x0483 --pid 0x101a --bus 1 --address 4 --interface 0 --endpoint 0x81
-```
-
-Capture options must precede the transport name. `--seconds 0` runs until Ctrl-C.
-`--quiet` suppresses live hex output. A read error ends the session with an error;
-it does not reconnect or substitute data. No received bytes simply means no
-observed input, not a stopped timer. Opening a USB interface may fail if another
-application owns it; the utility leaves drivers alone.
-
-The USB transport accepts `--read-timeout-ms` after `usb-interrupt` (default 100,
-range 1–5000). This changes only how long a host input read waits. The capture can
-exceed its requested duration by the final read's timeout. Applied settings are
-saved in the session; there is no automatic timeout or baud scanning.
-
-For an OS-exposed HID device, select its exact `path_hex` from discovery:
-
-```sh
-python -m dsan_capture capture --out captures/hid-check --label "State unknown" --timer-model unknown --signal-path unknown hid --path-hex HEX_FROM_DISCOVERY --read-size MAX_INPUT_REPORT_SIZE
-```
-
-Determine `MAX_INPUT_REPORT_SIZE` from the HID report descriptor, including a
-report ID where present. A USB endpoint packet size alone does not establish a
-HID report's length. HIDAPI input bytes are preserved verbatim; no IDs or padding
-are stripped. This transport could not be exercised with the connected dongle.
-
-For a **separately established serial interface**, supply all line settings:
-
-```sh
-python -m dsan_capture capture --out captures/serial-check --label "State unknown" --timer-model unknown --signal-path unknown serial --port ACTUAL_PORT --baud CONFIRMED_BAUD --data-bits 8 --parity N --stop-bits 1
-```
-
-19200/8N1 is an upstream Limitimer lead, not a setting verified for this dongle.
-Serial flow control is disabled; RTS/DTR are set inactive before opening.
-OS/driver open/close operations can still toggle lines or discard pre-open input.
-Application receive-only behavior does not guarantee electrical isolation.
-
-## Annotations and replay
-
-During or after recording, use another terminal:
-
-```sh
-python -m dsan_capture annotate captures/stopped-0100 "Controller shows P1, stopped, 1:00" --at 0
-python -m dsan_capture verify captures/stopped-0100
-python -m dsan_capture replay captures/stopped-0100
-python -m dsan_capture replay captures/stopped-0100 --speed 1
-```
-
-`--at` is the observation time in seconds from session creation. Omit it when
-unknown; the annotation still records its creation time. Replay defaults to
-immediate output; `--speed 1` uses recorded timing, `--speed 2` doubles speed.
-Replay never accesses hardware. It includes saved notes and unmodified read
-boundaries, suitable for a future streaming decoder.
-
-Each new session stores:
-
-- `metadata.json`: observed-state label, model/path, UTC start, host monotonic
-  origin, inventory, and requested settings.
-- `connection.json`: selected device descriptors/identity and applied transport
-  settings, when opening succeeds.
-- `raw.bin`: exactly the bytes returned by reads, including zeros and any HID
-  report IDs/padding. USB captures contain endpoint payloads, not USB bus headers.
-- `events.jsonl`: UTC and monotonic timestamps, offset/length for each read,
-  connection/errors, and an end record with total bytes and SHA-256. New captures
-  also record whether the interface opened, reads with data, and empty reads.
-  Empty reads are not interpreted as timer state. The CLI explicitly reports
-  an opened interface with zero input; close errors end with an error reason.
-  Periodic `receive-status` records document that the receive loop is alive,
-  including when no bytes arrive. They are not timer-state updates.
-- `annotations/`: separate append-only note files; annotation never rewrites raw
-  data or races with the acquisition journal.
-
-Timestamps represent host read completion, not individual bytes arriving on the
-wire. Bytes are saved before journaling, and both files are flushed/fsynced on
-each read. An interrupted process can leave untimestamped trailing bytes; those
-remain in the raw file, and replay warns and uses only fully journaled reads.
-A complete record means storage integrity, not valid protocol or successful
-hardware operation. Software cannot detect every loss in hardware/OS buffers.
-Back up real captures before promoting selected captures into test fixtures.
-Captures and inventories are ignored by Git because they contain local device
-identifiers. No invented data is labelled as a real timer capture.
-
-## Validation and next stage
-
-```sh
-python -m compileall -q dsan_capture tests tools
-python -m unittest discover -s tests -v
-```
-
-VS Code tasks for these checks are in [tasks.json](.vscode/tasks.json).
-Fifty-two tests cover byte preservation, read boundaries,
-corruption/truncation, interrupted sessions, timing, annotations, and transport
-failure. Sixteen decoding tests cover the USB report envelope and Limitimer
-framing/state against upstream capture excerpts and our real fragments; they do
-not verify decoding of our own dongle's stream. The actual USB access check can be
-replayed from [its session directory](captures/initial-access-check/).
-The tests include two synthetic same-product USB sources and isolated close/
-missing-target behavior. USB inventories include port topology where available;
-it is a reconnect hint, not proof of unique physical identity.
-
-Module boundaries: [discovery](dsan_capture/discovery.py) inventories devices;
-[transport](dsan_capture/transport.py) returns bytes;
-[session](dsan_capture/session.py) records and replays them;
-[hid_stream](dsan_capture/hid_stream.py) unwraps USB reports;
-[limitimer](dsan_capture/limitimer.py) frames and decodes the stream;
-[CLI](dsan_capture/__main__.py) coordinates user actions. Timer-state mapping and
-rendering remain separate later layers.
-The eventual display must mark the last value stale on disconnect or data timeout
-and never silently continue a local countdown. Fullscreen, program selection,
-warning/overtime colors, and GUI replay remain later milestones.
+For bug reports, include the app version, OS, controller/dongle models, and steps
+to reproduce. Review logs before sharing: device paths and inventories can contain
+local identifiers.
