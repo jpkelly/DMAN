@@ -1,7 +1,11 @@
 # DSAN Display
 
+![A Limitimer dongle and a PerfectCue dongle connected to one PC, showing a timer and cue on one display](docs/images/two-dongles.svg)
+
 Full-screen video display of DSAN Limitimer countdowns and PerfectCue Next/Previous
-cues, for confidence monitors and stage displays. Show the timer, the cues, or both.
+cues, for confidence monitors and stage displays. It reads a Limitimer dongle and a
+PerfectCue dongle at the same time on one PC, so you can show the timer, the cues,
+or both.
 
 ## Quick start — Windows
 
@@ -40,6 +44,13 @@ DSANDisplay.exe --host 127.0.0.1
 ```
 
 ## Compatibility
+
+Tested with:
+
+- DSAN Limitimer PRO-2000 controller with a VC-2000PC USB dongle
+- PerfectCue Next/Previous from a PerfectCue emulator through a second DSAN USB dongle
+  configured for PerfectCue
+- Both dongles report firmware `Ver 0.17 10/03/14`
 
 Windows 10/11 x64. No vendor software or extra drivers needed. The executable is
 unsigned, so Windows may show a warning on first launch. PerfectCue Blank is not

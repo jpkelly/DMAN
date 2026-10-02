@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 262" width="840" height="262" role="img" aria-label="A Limitimer dongle and a PerfectCue dongle connected to one PC at the same time, driving one video display showing a countdown and a Next cue">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3b3f"/>
+      <stop offset="0.35" stop-color="#1f2023"/>
+      <stop offset="1" stop-color="#121214"/>
+    </linearGradient>
+    <g id="dongle">
+      <rect x="0" y="0" width="190" height="56" rx="11" fill="url(#body)"/>
+      <rect x="40" y="9" width="132" height="38" rx="3" fill="none" stroke="#6e6f75" stroke-width="1"/>
+      <rect x="92" y="15" width="44" height="20" rx="2" fill="none" stroke="#b9bac0" stroke-width="1"/>
+      <circle cx="98" cy="20" r="1.8" fill="#d9d9de"/>
+      <circle cx="98" cy="25" r="1.8" fill="#d9d9de"/>
+      <circle cx="98" cy="30" r="1.8" fill="#d9d9de"/>
+      <text x="118" y="28" font-family="Menlo, Consolas, monospace" font-size="8" fill="#d9d9de" text-anchor="middle">00:00</text>
+      <text x="114" y="43" font-family="Helvetica, Arial, sans-serif" font-size="6" font-weight="700" fill="#b9bac0" text-anchor="middle" letter-spacing="0.5">VIDEO CLOCK</text>
+      <rect x="-3" y="14" width="22" height="28" rx="2" fill="#d4d5d9"/>
+      <rect x="1" y="19" width="14" height="18" rx="1" fill="#3a3b3f"/>
+      <rect x="3" y="20" width="10" height="3" fill="#c9a227"/>
+      <rect x="176" y="19" width="16" height="18" rx="2" fill="#8d8e94"/>
+    </g>
+  </defs>
+
+  <rect x="0" y="0" width="840" height="262" rx="16" fill="#f3f4f6"/>
+
+  <!-- Controller inputs -->
+  <text x="22" y="86" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2023">Limitimer</text>
+  <text x="22" y="186" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2023">PerfectCue</text>
+  <line x1="120" y1="80" x2="150" y2="80" stroke="#2f80ed" stroke-width="4" stroke-linecap="round"/>
+  <text x="133" y="70" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#5b5d63" text-anchor="middle">RJ45</text>
+  <text x="133" y="170" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#5b5d63" text-anchor="middle">RJ45</text>
+  <line x1="120" y1="180" x2="150" y2="180" stroke="#2f80ed" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Two dongles -->
+  <use href="#dongle" x="152" y="52"/>
+  <use href="#dongle" x="152" y="152"/>
+
+  <!-- USB cables into one PC -->
+  <path d="M344 80 C 400 80, 400 112, 448 116" fill="none" stroke="#45474d" stroke-width="4" stroke-linecap="round"/>
+  <path d="M344 180 C 400 180, 400 128, 448 124" fill="none" stroke="#45474d" stroke-width="4" stroke-linecap="round"/>
+
+  <text x="372" y="72" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#5b5d63" text-anchor="middle">USB</text>
+  <text x="372" y="198" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#5b5d63" text-anchor="middle">USB</text>
+
+  <!-- PC -->
+  <rect x="452" y="74" width="104" height="68" rx="5" fill="#2b2d31"/>
+  <rect x="459" y="81" width="90" height="54" rx="2" fill="#3f4752"/>
+  <text x="504" y="104" font-family="Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">10:00</text>
+  <path d="M497 113 L 511 120 L 497 127 Z" fill="#27ae60"/>
+  <path d="M438 142 H 570 L 562 152 H 446 Z" fill="#45474d"/>
+  <text x="504" y="176" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#5b5d63" text-anchor="middle">Windows PC</text>
+
+  <!-- Video out -->
+  <line x1="582" y1="110" x2="616" y2="110" stroke="#45474d" stroke-width="3" stroke-linecap="round"/>
+  <path d="M616 103 L 628 110 L 616 117 Z" fill="#45474d"/>
+  <text x="604" y="96" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#5b5d63" text-anchor="middle">HDMI</text>
+
+  <!-- Display -->
+  <rect x="636" y="40" width="182" height="120" rx="7" fill="#1b1c1f"/>
+  <rect x="643" y="47" width="168" height="106" rx="3" fill="#000000"/>
+  <text x="727" y="96" font-family="Menlo, Consolas, monospace" font-size="36" font-weight="700" fill="#ffffff" text-anchor="middle">10:00</text>
+  <path d="M716 108 L 740 121 L 716 134 Z" fill="#27ae60"/>
+  <rect x="716" y="160" width="22" height="18" fill="#45474d"/>
+  <rect x="692" y="178" width="70" height="7" rx="3" fill="#45474d"/>
+
+  <text x="420" y="244" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#3b3d42" text-anchor="middle">Two DSAN dongles at the same time → one PC → timer and cues on one display</text>
+</svg>

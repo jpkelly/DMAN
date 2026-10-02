@@ -1,7 +1,8 @@
 # DSAN Display user guide
 
 DSAN Display shows a Limitimer countdown and PerfectCue Next/Previous cues as a
-full-screen video output for confidence monitors and stage displays.
+full-screen video output for confidence monitors and stage displays. It reads a
+Limitimer dongle and a PerfectCue dongle at the same time on one PC.
 
 ## Requirements
 
@@ -9,6 +10,15 @@ full-screen video output for confidence monitors and stage displays.
 - A web browser (Chrome or Edge recommended)
 - A DSAN USB dongle for each controller: one set up for Limitimer, one for
   PerfectCue. You can use either or both.
+
+Each dongle is set to Limitimer or PerfectCue by DIP switches inside it. Open the
+dongle to reach them; the correct positions for each role are marked inside. Set one
+dongle for each controller before you start. See the
+[DSAN VideoClock documentation](https://www.dsan.com/video-clock-software/) for more.
+
+Tested with a Limitimer PRO-2000 controller and VC-2000PC dongle, and with
+PerfectCue Next/Previous from a PerfectCue emulator through a second DSAN dongle.
+Both dongles report firmware `Ver 0.17 10/03/14`.
 
 No vendor software or extra drivers are needed. Close DSAN VideoClock and any
 other software that uses the dongles before starting.
@@ -27,8 +37,8 @@ other software that uses the dongles before starting.
 3. The last page shows the timer and cues being received. Check them against
    your controllers, then select **Open confidence display**.
 
-Each dongle's role must match how it is set up inside the dongle. The app can't
-detect this from USB, so make sure you choose the right role.
+The role you choose in the wizard must match the dongle's DIP switch setting.
+The app can't read the switches, so make sure you choose the right role.
 
 Your setup is saved. Later launches start the paired inputs automatically.
 To pair again, select **Device setup** in the page header.
