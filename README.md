@@ -1,4 +1,4 @@
-# DSAN Video Clock Display
+# DSAN Timer/Cue Display
 
 ![A VC-2000-LT for Limitimer and a VC-2000PC for PerfectCue connected to one PC, showing a timer and cue on one display](docs/images/vc-2000-devices.svg)
 
