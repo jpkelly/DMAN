@@ -97,8 +97,8 @@ is `LABEL=TARGET`:
   decoder. Emulator/dongle Next/Previous captures exist; real PerfectCue is untested.
 
 The Pi needs the transferred capture modules and
-[pi_stream.py](../tools/pi_stream.py), with its helper
-[pi_hidraw_capture.py](../tools/pi_hidraw_capture.py). The Pi preparation already
+[pi_stream.py](../../tools/pi_stream.py), with its helper
+[pi_hidraw_capture.py](../../tools/pi_hidraw_capture.py). The Pi preparation already
 installed these. The stream validates the selected HID VID/PID and exact known
 report descriptor, then opens the node read-only. It sends JSON reports and
 heartbeat messages, not timer commands. The temporary USB quirk must remain
@@ -138,10 +138,10 @@ been tested. The current preview has one live source and one replay source.
 
 ## Implementation and checks
 
-[model.py](../dsan_display/model.py) owns one decoder/freshness state per source.
-[workers.py](../dsan_display/workers.py) owns independent transport threads.
-[The local server](../dsan_display/__main__.py) serves the UI and snapshots.
-[Browser code](../dsan_display/web/app.js) renders the selected received value.
+[model.py](../../dsan_display/model.py) owns one decoder/freshness state per source.
+[workers.py](../../dsan_display/workers.py) owns independent transport threads.
+[The local server](../../dsan_display/__main__.py) serves the UI and snapshots.
+[Browser code](../../dsan_display/web/app.js) renders the selected received value.
 No third-party web framework or vendor DLL was added.
 
 The first Mac browser check showed live P2 at 32:00, switching to P1 at 0:52,

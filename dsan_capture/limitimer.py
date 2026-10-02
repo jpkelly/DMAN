@@ -2,7 +2,7 @@
 
 Original implementation. The frame layout and field positions follow the
 reverse engineering in Depili/limitimer (GPL-2.0-or-later, see
-docs/limitimer-protocol.md), checked against that project's RS-485 captures.
+docs/development/limitimer-protocol.md), checked against that project's RS-485 captures.
 Pi/VC-2000PC captures now confirm framing and P1 stopped at 1:00. Other timer
 states remain to be checked; these dongle frames carry absent (zero) checksums.
 

@@ -76,7 +76,7 @@ def main():
     archive = dist / 'DSANDisplay-windows-x64.zip'
     with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as output:
         output.write(exe, exe.name)
-        output.write(ROOT / 'docs/windows-exe.md', 'START-HERE.md')
+        output.write(ROOT / 'docs/user-guide.md', 'START-HERE.md')
         output.write(staging / 'build-info.json', 'build-info.json')
         for notice in sorted(notices.iterdir()):
             output.write(notice, 'licenses/' + notice.name)

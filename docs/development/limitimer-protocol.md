@@ -1,9 +1,9 @@
 # Limitimer stream protocol: reference analysis
 
-Status 2026-09-27. Implementation: [hid_stream.py](../dsan_capture/hid_stream.py)
-(USB report → byte stream) and [limitimer.py](../dsan_capture/limitimer.py)
+Status 2026-09-27. Implementation: [hid_stream.py](../../dsan_capture/hid_stream.py)
+(USB report → byte stream) and [limitimer.py](../../dsan_capture/limitimer.py)
 (stream → frames → state). Both are original code. Tests:
-[test_hid_stream.py](../tests/test_hid_stream.py), [test_limitimer.py](../tests/test_limitimer.py).
+[test_hid_stream.py](../../tests/test_hid_stream.py), [test_limitimer.py](../../tests/test_limitimer.py).
 
 ## Evidence levels
 
@@ -23,7 +23,7 @@ three older states at opening. The 52-byte state body and absent FF terminator
 are observed across complete dongle frames. Checksum bytes are zero/absent; do
 not describe them as CRC-valid. Running/paused/overtime/program-switch semantics
 remain to be checked. See [Pi results](pi5-investigation.md) and the
-[real fixture regression](../tests/test_dongle_fixture.py).
+[real fixture regression](../../tests/test_dongle_fixture.py).
 
 ## Sources
 
@@ -38,7 +38,7 @@ remain to be checked. See [Pi results](pi5-investigation.md) and the
   `81` and `83` and accepts length 52 or 55 at `83`, matching the 52-byte body below.
 
 All upstream code is GPL-2.0-or-later. It was read, not copied; see
-[third-party notes](third-party.md).
+[third-party notes](../third-party.md).
 
 ## Layer 1: USB report → stream (vendor-derived)
 

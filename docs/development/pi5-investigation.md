@@ -20,7 +20,7 @@ authorized diagnostic host; the eventual Mac/Windows application goal is unchang
 The Pi's external DNS failed. Dependencies were downloaded on the Mac and copied
 over SSH, then installed offline. The tcpdump Debian package was verified against
 the SHA-256 in the Pi's existing apt metadata. No network/DNS configuration was
-changed. Preparation evidence is in [pi5-setup](../inventories/pi5-setup/).
+changed. Preparation evidence is in [pi5-setup](../../inventories/pi5-setup).
 
 ## Runtime quirk
 
@@ -28,7 +28,7 @@ The initial `/sys/module/usbcore/parameters/quirks` value was empty. With the
 dongle absent, it was set to **`0483:101a:d`** and read back successfully. This is
 a runtime setting only: no boot configuration was edited, and reboot clears it.
 The original and requested values are in
-[quirk-change.json](../inventories/pi5-setup/quirk-change.json).
+[quirk-change.json](../../inventories/pi5-setup/quirk-change.json).
 
 The Raspberry Pi Linux 6.12 branch maps `d` to
 `USB_QUIRK_CONFIG_INTF_STRINGS`; the USB core skips configuration-string fetching
@@ -54,7 +54,7 @@ At preparation, only root hubs were enumerated. A transient systemd service,
 
 The service stops automatically after 900 seconds; tcpdump uses SIGINT for a
 normal close and rotates at 16 MB into at most two files. See
-[active-usbmon.json](../inventories/pi5-setup/active-usbmon.json). This is a
+[active-usbmon.json](../../inventories/pi5-setup/active-usbmon.json). This is a
 preparation-time state, not a guarantee it is still active when work resumes.
 
 Check service status and the log before relying on capture coverage. If its limit
@@ -67,7 +67,7 @@ workspace and record the host clock context before analysis.
 
 The Pi reported July 23 while the Mac reported September 27. Its clock was not
 changed. A bounded SSH round-trip calibration records the approximate offset in
-[clock-and-quirk.json](../inventories/pi5-setup/clock-and-quirk.json).
+[clock-and-quirk.json](../../inventories/pi5-setup/clock-and-quirk.json).
 Treat Pi wall-clock timestamps as unsynchronized. Use local monotonic capture
 offsets and the calibration for correlation; do not compare raw Pi and Mac UTC
 fields as though synchronized. Record a fresh calibration for later sessions.
@@ -107,9 +107,9 @@ previously authorized dongle initialization messages.
   zero kernel capture drops. The trace and session were copied back to the Mac;
   raw capture length/hash validation passed.
 
-Evidence: [descriptor/status/control trace analysis](../inventories/pi5-first-attach/),
-[raw USB monitor capture](../inventories/pi5-first-attach/usbmon/usbmon.pcap0),
-[first application capture](../captures/pi-hidraw-init-first/).
+Evidence: [descriptor/status/control trace analysis](../../inventories/pi5-first-attach),
+[raw USB monitor capture](../../inventories/pi5-first-attach/usbmon/usbmon.pcap0),
+[first application capture](../../captures/pi-hidraw-init-first).
 
 ### Acquisition quality and decoding limits
 
@@ -124,19 +124,19 @@ also contains incomplete-length frames. No checksum integrity or timer-field
 accuracy is claimed from this unlabelled run. The apparent decoded time changes
 have not yet been compared with known physical states.
 
-[pi_hidraw_capture.py](../tools/pi_hidraw_capture.py) now records to Linux tmpfs
+[pi_hidraw_capture.py](../../tools/pi_hidraw_capture.py) now records to Linux tmpfs
 during bounded acquisition and copies/verifies the session on storage afterward.
 It leaves the kernel HID driver attached and offers only the reviewed output,
 opt-in. The default is receive-only. Its active RAM-backed data does not survive
 power loss; copy failures preserve recovery files rather than deleting them.
-A three-second [throughput check](../captures/pi-tmpfs-throughput-check/) received
+A three-second [throughput check](../../captures/pi-tmpfs-throughput-check) received
 376 reports and yielded 35 expected-length state frames with no length rejection
 (only an initial partial-frame discard). This supports improved acquisition but
 is not yet proof of zero report loss. The tool compiled on both hosts and the
 saved capture's integrity check passed.
 
 The owner confirmed program 1 stopped at exactly 1:00. The subsequent
-[ten-second capture](../captures/pi-p1-stopped-0100/) received 1,251 reports
+[ten-second capture](../../captures/pi-p1-stopped-0100) received 1,251 reports
 (10,008 bytes), containing 113 complete state frames and 115 short frames. Three
 initial state frames showed an older running 30-minute state; then **110
 consecutive state frames** matched P1 selected, stopped, total 60, elapsed 0,
@@ -147,8 +147,8 @@ established.
 
 There were no rejected state lengths in this run and no FF terminators. All
 checksums were zero/absent, so field agreement is not CRC validation. The raw
-reports were promoted to a [real test fixture](../tests/fixtures/dongle/pi-p1-stopped-0100.bin)
-with [provenance](../tests/fixtures/dongle/pi-p1-stopped-0100.json). The regression
+reports were promoted to a [real test fixture](../../tests/fixtures/dongle/pi-p1-stopped-0100.bin)
+with [provenance](../../tests/fixtures/dongle/pi-p1-stopped-0100.json). The regression
 test verifies the old prefix is preserved and all 110 later states match the
 user's observation, even when normalized payloads are split across feed calls.
 All **44 current unit tests** pass. Running, pause, zero-crossing and program
@@ -161,7 +161,7 @@ so it survives a chat turn. Keep the quirk active for these tests.
 
 ### Running, zero and paused observations
 
-The [90-second running recording](../captures/pi-p1-running-window/) completed
+The [90-second running recording](../../captures/pi-p1-running-window) completed
 normally with 11,251 reports and 976 state frames, with no rejected state lengths.
 P1 changed from stopped to running at elapsed 19.162 s, and the elapsed field
 progressed through every integer 0–71. Remaining reached zero at 78.404 s and
@@ -173,11 +173,11 @@ is not yet verified.
 
 The owner then reported paused at 0:52. Since the earlier run had expired,
 intervening reset/start actions were not inferred. A separate
-[paused capture](../captures/pi-p1-paused-0052/) received 1,251 reports and 112
+[paused capture](../../captures/pi-p1-paused-0052) received 1,251 reports and 112
 state frames: three old running frames first, then 109 consecutive states with
 P1 selected, run false, total 60, elapsed 8 and remaining 52. Both captures have
 zero/absent checksums and no FF terminators. Raw fixtures and provenance are in
-[dongle fixtures](../tests/fixtures/dongle/); all **46 current tests** pass.
+[dongle fixtures](../../tests/fixtures/dongle); all **46 current tests** pass.
 
 The next capture, `pi-program-switch`, is armed under the bounded
 `dsan-program-switch-20260927` systemd unit for 90 seconds, pending the owner

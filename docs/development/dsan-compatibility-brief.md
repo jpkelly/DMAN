@@ -88,9 +88,9 @@ remains unavailable. See the [HID investigation](hid-investigation.md).
 ## Local evidence for follow-up
 
 - [Detailed investigation and source references](investigation.md)
-- [USB descriptors after reconnection](../inventories/direct-path-reconnected-descriptors.json)
-- [Stopped-at-1:00 capture](../captures/pro2000-p1-stopped-0100/)
-- [USB diagnostic log](../captures/usb-receive-diagnostic-libusb.log)
+- [USB descriptors after reconnection](../../inventories/direct-path-reconnected-descriptors.json)
+- [Stopped-at-1:00 capture](../../captures/pro2000-p1-stopped-0100)
+- [USB diagnostic log](../../captures/usb-receive-diagnostic-libusb.log)
 
 The local links are for the owner's use. Full inventories include other attached
 devices; the relevant DSAN identity is summarized above so those inventories do

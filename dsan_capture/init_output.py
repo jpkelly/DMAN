@@ -1,11 +1,11 @@
 """Reviewed, opt-in per-role initialization outputs.
 
-Derived from the vendor application (docs/dongle-research.md): after opening the
+Derived from the vendor application (docs/development/dongle-research.md): after opening the
 dongle, VideoClock for Limitimer writes 8D 00 in a 65-byte Windows HID output
 buffer (report-ID slot 0 + 64 bytes). The device has no interrupt-OUT endpoint,
 so the standard USB equivalent is HID SET_REPORT (Output, ID 0) on endpoint 0.
 The equivalent control transfer was subsequently captured successfully on the
-Pi; see docs/pi5-investigation.md. Windows execution remains to be tested.
+Pi; see docs/development/pi5-investigation.md. Windows execution remains to be tested.
 """
 LIMITIMER_INIT = bytes((0x8D, 0x00))
 REPORT_LENGTH = 64

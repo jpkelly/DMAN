@@ -36,7 +36,7 @@ emulator, reviewed the roles, clicked Save and start, and checked real input.
   six additional recognized cue events, both sources connected without errors.
 - Setup and the already-open video output both displayed 12:00. We returned the
   active browser page to the confidence display after confirmation.
-- Evidence: [browser setup notes](docs/browser-setup.md) and local ignored
+- Evidence: [browser setup notes](browser-setup.md) and local ignored
   `inventories/browser-setup-pi/post-save-state.jsonl` (state snapshots, not raw USB).
 
 ## Repository and executable
@@ -129,7 +129,7 @@ Do not assume the process or SSH connection survives overnight.
   send email/messages to other people or flash firmware.
 - Preserve raw captures/inventories/vendor installers. They are ignored locally;
   do not commit vendor binaries. No vendor DLL is loaded or bundled. Check
-  [third-party notes](docs/third-party.md) before incorporating upstream GPL code.
+  [third-party notes](../third-party.md) before incorporating upstream GPL code.
 - Ultraleap was restored after earlier diagnostics; do not stop it without new
   evidence. Do not apply the experimental Mac kernel-extension work.
 
@@ -140,8 +140,8 @@ unplug/reconnect request remains. Ask for the user's next priority rather than
 restarting investigation. The main remaining deployment milestone is a real
 Windows run with both dongles, followed by external monitor/output checks.
 
-Useful entry points: [setup bridge](dsan_display/setup.py),
-[Windows launcher](dsan_display/windows.py), [Pi adapter](dsan_display/pi_setup.py),
-[setup UI](dsan_display/web/setup.js), [server](dsan_display/__main__.py),
-[workers](dsan_display/workers.py), [setup tests](tests/test_setup.py),
-[Windows package instructions](docs/windows-exe.md).
+Useful entry points: [setup bridge](../../dsan_display/setup.py),
+[Windows launcher](../../dsan_display/windows.py), [Pi adapter](../../dsan_display/pi_setup.py),
+[setup UI](../../dsan_display/web/setup.js), [server](../../dsan_display/__main__.py),
+[workers](../../dsan_display/workers.py), [setup tests](../../tests/test_setup.py),
+[Windows package instructions](windows-build.md).

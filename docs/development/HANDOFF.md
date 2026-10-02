@@ -17,7 +17,7 @@ The decoder and real fixtures now cover that stream; bare serial cue bytes are
 not the HID format. Real PerfectCue, Blank and Windows USB are still untested.
 All 70 tests pass. **DSAN: mixed dongle preview** runs both Pi HID readers at
 localhost:8765 with a live timer and cue overlay. Details supersede older
-provisional-parser paragraphs below; see [Windows notes](docs/windows.md).
+provisional-parser paragraphs below; see [Windows notes](windows.md).
 
 # Handoff prompt: DSAN display application
 
@@ -33,7 +33,7 @@ Windows application reading TWO dongles simultaneously: one Limitimer and one
 PerfectCue. Their identical USB IDs cannot establish hardware role. Bind each by
 exact HID path, name it, store its role and initialization preference, and keep
 readers/decoders/state independent. Never send the Limitimer mode to the cue
-source. See [Windows setup and verification limits](docs/windows.md). Windows
+source. See [Windows setup and verification limits](windows.md). Windows
 native execution and real mixed-dongle testing are still outstanding. Mac direct
 USB work is deferred. Existing Mac/Pi display and replay remain available.
 
@@ -45,7 +45,7 @@ labelled PerfectCue captures before claiming cue support is verified.
 
 **Latest implementation:** a first browser confidence display now runs on the Mac
 at `http://127.0.0.1:8765` via the **DSAN: confidence display** task. See
-[display.md](docs/display.md). Its live source is Pi-over-SSH, not direct Mac USB.
+[display.md](display.md). Its live source is Pi-over-SSH, not direct Mac USB.
 It also supports replay and separate source workers. Four real dongle fixtures
 cover stopped, running/zero, paused and P1→P2 selection; P2 32:00 was confirmed
 while P1 stayed paused at 0:52. The current full suite passed 52 tests. Older
@@ -72,15 +72,15 @@ HID envelope handling, timer packet decoding, state, and rendering separate.
 
 ## Read these first
 
-- [README](README.md): commands and milestone status. Some historical paragraphs
+- [README](../../README.md): commands and milestone status. Some historical paragraphs
   retain earlier uncertainty; the later user confirmations and research below
   supersede them.
-- [Offline dongle research](docs/dongle-research.md): most important technical
+- [Offline dongle research](dongle-research.md): most important technical
   findings, binary identities, call-site addresses, references, and next test.
-- [Multi-dongle requirements](docs/multiple-dongles.md).
-- [Hardware/capture history](docs/investigation.md) and
-  [HID investigation](docs/hid-investigation.md).
-- [Third-party obligations](docs/third-party.md).
+- [Multi-dongle requirements](multiple-dongles.md).
+- [Hardware/capture history](investigation.md) and
+  [HID investigation](hid-investigation.md).
+- [Third-party obligations](../third-party.md).
 
 At the 2026-09-27 handoff inspection, this directory was **not a Git repository**,
 and no AGENTS.md was found. Recheck rather than assuming that remains true.
@@ -103,7 +103,7 @@ and no AGENTS.md was found. Recheck rather than assuming that remains true.
   want to avoid setting one up. Keep work on the Mac; do not make Pi setup a
   dependency or keep requesting Pi/SSH details.
 - **Later update superseding that constraint:** the owner supplied a ready Pi 5,
-  `ssh pi@pi5start.local`. See [current Pi preparation and capture state](docs/pi5-investigation.md).
+  `ssh pi@pi5start.local`. See [current Pi preparation and capture state](pi5-investigation.md).
   SSH works; a runtime `0483:101a:d` quirk is set, and a 15-minute USB monitor was
   armed pending attachment. Check whether it is still running before use. Pi
   timestamps are unsynchronized; a clock calibration is saved. No boot edits.
@@ -145,10 +145,10 @@ Do not substitute the TP-2000X ASCII protocol or assume a serial/COM port exists
 
 The user supplied both original packages, preserved in the workspace:
 
-- [PerfectCue installer](VideoClock_For_PerfectCue/VideoClockForPerfectCueSetup.exe)
-  and [ZIP](VideoClock_For_PerfectCue.zip).
-- [Limitimer installer](VideoClockForLimitimer/VideoClockForLimitimerSetup.exe)
-  and [ZIP](VideoClockForLimitimer.zip).
+- [PerfectCue installer](../../VideoClock_For_PerfectCue/VideoClockForPerfectCueSetup.exe)
+  and [ZIP](../../VideoClock_For_PerfectCue.zip).
+- [Limitimer installer](../../VideoClockForLimitimer/VideoClockForLimitimerSetup.exe)
+  and [ZIP](../../VideoClockForLimitimer.zip).
 
 Both installers exactly match their official DSAN downloads. Static PE/zlib
 inspection recovered their application images and USB support library in scratch
@@ -202,34 +202,34 @@ captured or hardware-verified USB transaction**. Do not send it automatically.
 
 Reproducible evidence:
 
-- [Offline audit tool](tools/audit_dsan_installer.py): reads PE/container metadata,
+- [Offline audit tool](../../tools/audit_dsan_installer.py): reads PE/container metadata,
   writes JSON only, no network/hardware access or binary execution.
-- [PerfectCue audit](docs/vendor-perfectcue-audit.json) and
-  [Limitimer audit](docs/vendor-limitimer-audit.json).
+- [PerfectCue audit](vendor-perfectcue-audit.json) and
+  [Limitimer audit](vendor-limitimer-audit.json).
 - The research report records hashes, precise RVA checkpoints, and evidence
   boundaries. Use it instead of repeating the whole binary investigation.
 
 ## Existing implementation
 
 Minimal Python 3.11+ CLI, developed here with Python 3.14.6. Local environment is
-in [.venv](.venv/). Dependencies in [requirements.txt](requirements.txt): pyserial
+in [.venv](../../.venv). Dependencies in [requirements.txt](../../requirements.txt): pyserial
 3.5, hidapi 0.15.0, pyusb 1.3.1. Existing Homebrew libusb was available; no global
 USB driver installation was performed.
 
-- [Discovery](dsan_capture/discovery.py): serial/HID/native USB inventories,
+- [Discovery](../../dsan_capture/discovery.py): serial/HID/native USB inventories,
   saved comparisons, USB descriptors and port topology where available.
-- [Transport](dsan_capture/transport.py): instance-owned serial, HID and explicit
+- [Transport](../../dsan_capture/transport.py): instance-owned serial, HID and explicit
   USB interrupt-IN receivers. USB capture requires exact bus/address/interface
   and inspects only the selected device, even when peers share VID/PID.
-- [Session storage/replay](dsan_capture/session.py): lossless returned bytes,
+- [Session storage/replay](../../dsan_capture/session.py): lossless returned bytes,
   UTC/monotonic timestamps, read boundaries, integrity hashes, annotations,
   incomplete-session handling, replay with timing. Captures never overwrite.
-- [HID descriptor inspection](dsan_capture/hid_inspection.py): bounded standard
+- [HID descriptor inspection](../../dsan_capture/hid_inspection.py): bounded standard
   IN descriptor read; logs response/error, does not guess reports.
-- [CLI](dsan_capture/__main__.py): `discover`, `diff`, `inspect-usb`, `inspect-hid`,
+- [CLI](../../dsan_capture/__main__.py): `discover`, `diff`, `inspect-usb`, `inspect-hid`,
   `capture`, `annotate`, `verify`, `replay`. It records periodic receive-loop
   liveness and distinguishes opened-with-no-data from opening failure.
-- [Tests](tests/): **23 tests** at handoff, with the last full run passing. These
+- [Tests](../../tests): **23 tests** at handoff, with the last full run passing. These
   cover infrastructure, descriptor handling and synthetic two-device isolation;
   they do not prove DSAN timer decoding or real simultaneous hardware operation.
 
@@ -247,7 +247,7 @@ Useful checks from the workspace root:
 
 ## Capture history and cautions
 
-Preserve [captures](captures/) and [inventories](inventories/). They are locally
+Preserve [captures](../../captures) and [inventories](../../inventories). They are locally
 ignored by the existing ignore file and contain valuable real observations.
 
 Several short captures returned no bytes. A few produced one eight-byte report,
@@ -303,7 +303,7 @@ reuse/distribution obligations before incorporating code. No upstream code has
 been incorporated so far. No license granting incorporation/redistribution of
 DSAN's proprietary DLL or application was established; keep vendor binaries out
 of the app and do not copy their artwork or implementation. A draft
-[DSAN inquiry](docs/dsan-compatibility-brief.md) exists; **nothing has been sent**.
+[DSAN inquiry](dsan-compatibility-brief.md) exists; **nothing has been sent**.
 
 ## Authorization and next work
 

@@ -21,14 +21,14 @@ mapping or initialization sequence is currently verified.
 
 ## Standard descriptor-read probe
 
-[hid_inspection.py](../dsan_capture/hid_inspection.py) implements a bounded,
+[hid_inspection.py](../../dsan_capture/hid_inspection.py) implements a bounded,
 targeted standard IN GET_DESCRIPTOR request. It validates the advertised length
 table, confirms HID class, and saves the request, exact response bytes or error.
 It does not issue GET_REPORT, SET_REPORT, feature/output reports, SET_IDLE,
 configuration changes, or driver detachments. Any such later step would need a
 justified scope and evidence; it is not silently attempted as a fallback.
 
-The baseline [saved probe](../inventories/hid-report-before-ultraleap-comparison.json)
+The baseline [saved probe](../../inventories/hid-report-before-ultraleap-comparison.json)
 used `bmRequestType=81`, `bRequest=06`, `wValue=2200`, `wIndex=0`, `wLength=47`,
 with a 1000 ms timeout. It timed out and returned no descriptor. Its JSON status
 is `error`; the report-descriptor field is null, not invented data.
@@ -40,7 +40,7 @@ tests and the syntax check passed after adding the command.
 
 ## New Mac-side evidence
 
-Read-only inspection of [kernel USB logs](../inventories/dsan-usb-kernel-investigation.log)
+Read-only inspection of [kernel USB logs](../../inventories/dsan-usb-kernel-investigation.log)
 found repeated attempts by `libtrack_server` to open the DSAN device. The process
 was identified as:
 
@@ -57,7 +57,7 @@ documented below.
 The captured historical log contains 167 Ultraleap open failures during the
 selected window, including attempts while the system composite driver or our
 Python process had exclusive access. A fresh descriptor probe reproduced two
-such attempts in [the recent log](../inventories/dsan-ultraleap-recent.log).
+such attempts in [the recent log](../../inventories/dsan-ultraleap-recent.log).
 
 This proves another application is probing the same USB device. It does **not**
 prove that it successfully claimed the device during capture or caused missing
@@ -91,9 +91,9 @@ absent at 23:24:22 UTC. A root-owned background restoration check was scheduled
 for five minutes later as a fallback. The service definition was not changed.
 
 Before power-cycling the dongle, the
-[new descriptor probe](../inventories/hid-report-ultraleap-stopped.json) still
-timed out. HIDAPI's [inventory](../inventories/ultraleap-stopped.json) still lacked
-the DSAN device. A [ten-second capture](../captures/ultraleap-stopped-no-power-cycle/)
+[new descriptor probe](../../inventories/hid-report-ultraleap-stopped.json) still
+timed out. HIDAPI's [inventory](../../inventories/ultraleap-stopped.json) still lacked
+the DSAN device. A [ten-second capture](../../captures/ultraleap-stopped-no-power-cycle)
 opened successfully but returned ten empty reads and no bytes. Storage validation
 passed. Ultraleap was verified unloaded before and after these tests. Stopping
 the service alone did not restore reception; this does not exclude device state
@@ -103,22 +103,22 @@ The owner subsequently confirmed the full dongle power cycle. At 23:40:39 UTC,
 Ultraleap was still unloaded: the scheduled restoration fallback had not restored
 it by this check. Its failure mechanism has not been established.
 
-The [fresh-enumeration capture](../captures/ultraleap-stopped-after-power-cycle/)
+The [fresh-enumeration capture](../../captures/ultraleap-stopped-after-power-cycle)
 received one report, `07 81 00 21 6F 09 00 01`, then ten empty reads during its
 ten-second window. Integrity and replay checks passed. Capture was performed
 before the new descriptor request to avoid adding that request before acquisition.
-The [HID descriptor request](../inventories/hid-report-ultraleap-stopped-after-power-cycle.json)
+The [HID descriptor request](../../inventories/hid-report-ultraleap-stopped-after-power-cycle.json)
 still timed out; HIDAPI still had no DSAN entry. Ultraleap was verified unloaded
 both before and after the comparison. This reproduces the one-report-then-silence
 pattern seen with Ultraleap running and does not establish it as the cause.
 
 Explicit restoration via launchctl bootstrap was attempted immediately afterward.
 macOS administrator authorization was canceled (`-128`), so that command did not
-run. The [post-attempt service check](../inventories/ultraleap-restoration-status.json)
+run. The [post-attempt service check](../../inventories/ultraleap-restoration-status.json)
 confirmed the service was still unloaded at that point. No permanent disable flag
 or service-file edit was made. The owner then explained the cancellation was
 accidental and explicitly authorized a retry. The retry succeeded;
-[independent verification](../inventories/ultraleap-restored-verified.json) confirms
+[independent verification](../../inventories/ultraleap-restored-verified.json) confirms
 the service is loaded and running again (PID 64604 at verification). Restoration
 is complete. The fallback failure remains unexplained; do not rely on that
 background shell mechanism for future service restoration.
@@ -167,7 +167,7 @@ it are historical.
 
 ### Replug with control-endpoint watch (Ultraleap removed)
 
-[tools/ep0_watch.py](../tools/ep0_watch.py) polled standard GET_STATUS every
+[tools/ep0_watch.py](../../tools/ep0_watch.py) polled standard GET_STATUS every
 250 ms for 120 s across an owner replug; the macOS unified log was read for the
 same window (local time; saved under `inventories/replug-2026-09-27-*`). Result:
 **no GET_STATUS succeeded at any point** (145 attempts).
@@ -208,7 +208,7 @@ earlier SET_REPORT timeout does not show whether `8D 00` works.
   enumeration, so none can have reached firmware.
 - Each replug reproduces the index-92 timeout with no application running
   (09:37:17 and 09:42:57 local).
-- [tools/capture_probe.py](../tools/capture_probe.py), run as root: libusb
+- [tools/capture_probe.py](../../tools/capture_probe.py), run as root: libusb
   `detach_kernel_driver` (macOS capture) returned success but, per libusb
   1.0.30 source, capture mode "does not re-enumerate"; the device stayed hung.
   `libusb_reset_device` while captured uses `ResetDevice`, which is a no-op on
@@ -226,7 +226,7 @@ configuration descriptor's `iInterface` 92 with 0, so macOS never requests it.
 Passive capture with macOS's USB capture interfaces (`tcpdump -i XHC0`; all
 three controllers recorded, the hub is on XHC0) across an owner replug, RJ45
 connected, controller counting down. File `inventories/usbcap-2026-09-27-XHC0.pcap`,
-read with [tools/usb_pcap.py](../tools/usb_pcap.py) (filter on `83 04 1a 10`).
+read with [tools/usb_pcap.py](../../tools/usb_pcap.py) (filter on `83 04 1a 10`).
 The dongle has USB address 4 on that controller.
 
 | t (s) | Request | Result |
@@ -263,9 +263,9 @@ serial port appeared. IORegistry still reported `iInterface=92`; no
 This does not establish whether a proposed extension is installed elsewhere.
 The untracked macOS extension work was inspected but not modified or installed.
 
-- [Live GET_STATUS](../inventories/live-status-2026-09-27T170219.629081_0000.json)
+- [Live GET_STATUS](../../inventories/live-status-2026-09-27T170219.629081_0000.json)
   timed out before the initialization attempt.
-- The [12-second capture](../captures/authorized-probe-2026-09-27T170219.629081_0000/)
+- The [12-second capture](../../captures/authorized-probe-2026-09-27T170219.629081_0000)
   received one report: `07 81 00 21 6F 09 00 01`.
 - After two seconds of receiving, one reviewed SET_REPORT output (`21 09`,
   `wValue=0200`, interface 0, `8D 00` plus 62 zeros) was attempted. It timed out;
@@ -279,7 +279,7 @@ responsive device. A timeout does not prove that no request bytes reached the
 device. No system-service, driver, firmware or security-setting change was made
 during this probe.
 
-The [last-30-minute enumeration log](../inventories/probe-now-2026-09-27-enumeration-last30m.log)
+The [last-30-minute enumeration log](../../inventories/probe-now-2026-09-27-enumeration-last30m.log)
 includes the current address-4 attachment at 09:50:28 local, followed by the
 string-index-92 timeout at 09:50:33 and a remote-wake failure. These preceded the
 10:02 probe. The shorter last-ten-minute query contained no enumeration events;
@@ -287,7 +287,7 @@ no fresh replug occurred during this probe.
 
 ### Next-step review: host descriptor override
 
-The existing [codeless-kext proposal](../macos/build_kext.py) was reviewed offline.
+The existing [codeless-kext proposal](../../macos/build_kext.py) was reviewed offline.
 In a temporary directory it generated a valid plist, matched exactly VID `0483`,
 PID `101A`, revision `0100`, and changed only byte 17 of the 34-byte configuration
 descriptor: `iInterface` from `5C` to `00`. No executable is included. Nothing was
@@ -388,19 +388,19 @@ problem. The direct-Mac solution remains unproven under the requested constraint
 ### Alternate Mac USB-C port comparison (2026-09-27 10:18 local)
 
 After the owner reported moving/replugging the Anker adapter and dongle,
-[discovery](../inventories/alternate-port-2026-09-27T171723.006516_0000.json)
+[discovery](../../inventories/alternate-port-2026-09-27T171723.006516_0000.json)
 confirmed the DSAN location changed from `0x00110000` to `0x01110000` and USB
 bus **0** to **1**, address 4, port path `[1, 1]`. No HIDAPI entry or DSAN serial
 port appeared. This was an actual USB location change, not reuse of the earlier
 bus/address assumption.
 
-The [enumeration log](../inventories/alternate-port-2026-09-27T171723.006516_0000-enumeration.log)
+The [enumeration log](../../inventories/alternate-port-2026-09-27T171723.006516_0000-enumeration.log)
 shows the new location enumerating at 10:16:50 and again at 10:16:59 local. Both
 were followed by a string-index-92 timeout, before our probe. The current
 connection's timeout occurred at 10:17:04.539.
 
-[Live GET_STATUS](../inventories/alternate-port-2026-09-27T171723.006516_0000-live-status.json)
-timed out. The [12-second capture](../captures/alternate-port-2026-09-27T171723.006516_0000/)
+[Live GET_STATUS](../../inventories/alternate-port-2026-09-27T171723.006516_0000-live-status.json)
+timed out. The [12-second capture](../../captures/alternate-port-2026-09-27T171723.006516_0000)
 received `07 81 00 21 6F 02 00 01` once. One authorized `8D 00` SET_REPORT was
 attempted after a two-second baseline and timed out; no sustained input followed.
 Integrity validation passed. Timer display/run state was not reported.

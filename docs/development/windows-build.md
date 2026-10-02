@@ -1,4 +1,4 @@
-# DSAN Display executable
+# Windows executable: build and validation notes
 
 > **Validation update — 2026-09-29:** The project owner confirms Windows hardware
 > validation passed for v0.1.0. Earlier hardware-pending statements below describe
@@ -85,7 +85,7 @@ bundles a single console executable with PyInstaller, then runs the frozen
 Output is produced only after these checks pass:
 
 - `dist/DSANDisplay.exe`
-- `dist/DSANDisplay-windows-x64.zip` — executable, dependency notices, this guide
+- `dist/DSANDisplay-windows-x64.zip` — executable, dependency notices, the [user guide](../user-guide.md)
   and build metadata.
 - `dist/DSANDisplay.exe.sha256`
 

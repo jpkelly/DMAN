@@ -10,7 +10,7 @@ the proprietary application or USB DLL was established; none was executed,
 linked into the application, or added as a deliverable. Extracted images stayed
 in scratch storage. The user-supplied installer files were preserved as provided.
 The original audit tool reads PE/container metadata and produces JSON evidence;
-the [research report](dongle-research.md) documents interface behavior. Future
+the [research report](development/dongle-research.md) documents interface behavior. Future
 implementation must not copy vendor implementation or artwork into the project.
 
 ## Upstream timer implementations
@@ -39,7 +39,7 @@ engineering may be used freely. Consequently:
 - [limitimer.py](../dsan_capture/limitimer.py) and
   [hid_stream.py](../dsan_capture/hid_stream.py) are original implementations.
   They use the frame layout and field positions documented by Depili/limitimer
-  (credited in [the protocol notes](limitimer-protocol.md)); no code was copied.
+  (credited in [the protocol notes](development/limitimer-protocol.md)); no code was copied.
 - [Upstream capture excerpts](../tests/fixtures/upstream-limitimer/README.md) are
   unmodified byte ranges from Depili/limitimer's captures, used as test fixtures
   under GPL-2.0-or-later with [its license](licenses/depili-limitimer-LICENSE.txt).
@@ -51,7 +51,7 @@ A formal application license file has not been added yet.
 The Windows pivot adds an original candidate PerfectCue byte mapping from the
 protocol facts in clock8002's `perfectcue.md`. No upstream implementation or
 vendor DLL was copied. Its HID interpretation remains unverified with hardware;
-see [Windows implementation limits](windows.md). No new dependencies were added.
+see [Windows implementation limits](development/windows.md). No new dependencies were added.
 
 The additional owner-supplied forks
 [sytem/clock-8001](https://gitlab.com/sytem/clock-8001) and
@@ -83,7 +83,7 @@ and per-platform dependency license audits remain future work.
 
 ## Windows executable build
 
-The [Windows build](windows-exe.md) pins PyInstaller 6.22.3 as a build-only
+The [Windows build](development/windows-build.md) pins PyInstaller 6.22.3 as a build-only
 dependency. Its [bundling exception](https://pyinstaller.org/en/stable/license.html)
 permits distributing generated executables under terms compatible with the
 application's dependencies; it does not require licensing the application under

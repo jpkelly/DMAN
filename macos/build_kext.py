@@ -4,7 +4,7 @@ Merges kUSBDescriptorOverride onto the VC-2000PC's IOUSBHostDevice via Apple's
 AppleUSBHostMergeProperties, the same pattern Apple's IOBluetoothFamily uses.
 The override is the dongle's own configuration descriptor with iInterface
 changed from 0x5C (92) to 0, so macOS never requests string 92, which hangs
-the dongle (docs/hid-investigation.md). The device itself is not modified.
+the dongle (docs/development/hid-investigation.md). The device itself is not modified.
 """
 import plistlib
 import shutil

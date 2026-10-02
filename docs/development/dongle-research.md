@@ -30,15 +30,15 @@ macOS's descriptor timeouts are a separate unresolved issue.
 
 ## Evidence and provenance
 
-The owner supplied [the PerfectCue installer](../VideoClock_For_PerfectCue/VideoClockForPerfectCueSetup.exe)
-and [its ZIP package](../VideoClock_For_PerfectCue.zip). The supplied executable
+The owner supplied [the PerfectCue installer](../../VideoClock_For_PerfectCue/VideoClockForPerfectCueSetup.exe)
+and [its ZIP package](../../VideoClock_For_PerfectCue.zip). The supplied executable
 is byte-for-byte identical to the executable in DSAN's official
 [PerfectCue download](https://www.dsan.com/wp-content/uploads/2021/11/VideoClock_For_PerfectCue.zip).
 It was compared with the official
 [Limitimer download](https://www.dsan.com/wp-content/uploads/2021/11/VideoClockForLimitimer.zip).
 
-The owner subsequently supplied [the Limitimer installer](../VideoClockForLimitimer/VideoClockForLimitimerSetup.exe)
-and [its ZIP](../VideoClockForLimitimer.zip). A fresh offline audit confirms the
+The owner subsequently supplied [the Limitimer installer](../../VideoClockForLimitimer/VideoClockForLimitimerSetup.exe)
+and [its ZIP](../../VideoClockForLimitimer.zip). A fresh offline audit confirms the
 installer is byte-for-byte identical to the researched official version; both
 embedded PE image hashes are unchanged. The ZIP's installer also matches the
 extracted file. Its configuration identifies version 0.75 and device type 1.
@@ -66,7 +66,7 @@ application image span is 344,064 bytes.
 
 [PerfectCue audit](vendor-perfectcue-audit.json) and
 [Limitimer audit](vendor-limitimer-audit.json) preserve block offsets, identities,
-imports and exports. The original [offline audit script](../tools/audit_dsan_installer.py)
+imports and exports. The original [offline audit script](../../tools/audit_dsan_installer.py)
 reproduces that metadata without extracting files into the project or accessing
 hardware:
 
@@ -333,7 +333,7 @@ a deliverable. The audit script is original PE/container-inspection tooling;
 the report records behavior and evidence. Future implementation should use the
 documented interface behavior without copying vendor code or artwork. The
 existing GPL obligations for any reuse of Depili/Clock-8001 remain in
-[third-party notes](third-party.md).
+[third-party notes](../third-party.md).
 
 Still unknown: the actual report descriptor; the complete startup USB exchange;
 firmware-side meaning/persistence of `8D`; why macOS enumeration times out; and

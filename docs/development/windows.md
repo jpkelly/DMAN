@@ -30,20 +30,20 @@ and display small and portable; there is no new UI framework.
 remains outstanding. The owner confirms prior vendor-software
 operation with this Limitimer dongle. That does not verify our Windows backend.
 The initial setup targets Windows 10/11 x64 with Python 3.13 x64; Windows ARM64 is not covered. For the packaged executable, see the
-[Windows executable guide](windows-exe.md).
+[Windows executable guide](windows-build.md).
 
 ## Setup and launch
 
 1. Copy/clone this workspace to a writable folder on Windows. Install
    [Python 3.13 for Windows](https://www.python.org/downloads/windows/) including
    the `py` launcher. Internet is needed to install the pinned dependencies.
-2. Run [Setup Windows.cmd](../Setup%20Windows.cmd). It creates a separate
+2. Run [Setup Windows.cmd](../../Setup%20Windows.cmd). It creates a separate
    `.venv-windows` environment and installs prebuilt dependency wheels.
    No administrator terminal or PowerShell execution-policy change is needed.
 3. Close DSAN VideoClock and any other reader of these dongles. Connect each
    controller to its own dongle with the correct internal **Limitimer/PerfectCue**
    hardware setting. USB IDs alone cannot determine that setting.
-4. Run [Start DSAN.cmd](../Start%20DSAN.cmd). The browser opens device setup.
+4. Run [Start DSAN.cmd](../../Start%20DSAN.cmd). The browser opens device setup.
    First launch checks whether dongles are already connected. If so, it identifies
    each by a brief unplug/reconnect while peers stay connected. Otherwise it adds
    dongles one at a time. Choose the next unit's
@@ -145,7 +145,7 @@ implementation and exact cable path remain unspecified. The first message after
 initialization is not established as an acknowledgment; it matches the same cue
 format and could have come from the running emulator.
 
-The [streaming decoder](../dsan_capture/perfectcue.py) assembles the five-byte
+The [streaming decoder](../../dsan_capture/perfectcue.py) assembles the five-byte
 messages across HID reads, handles multiple messages in one read, resynchronizes
 at `81`, validates the observed fixed bytes, and retains unknown values without
 assigning a cue. These messages have no observed checksum; structurally valid
@@ -178,7 +178,7 @@ documented in the [HIDAPI header](https://github.com/libusb/hidapi/blob/hidapi-0
 The existing [installer research](dongle-research.md) and
 [Pi captures](pi5-investigation.md) establish the DSAN-side message and framing.
 No upstream or proprietary implementation was copied for this change. Existing
-[dependency license notices](third-party.md) still apply; packaging binaries
+[dependency license notices](../third-party.md) still apply; packaging binaries
 later must carry them.
 
 New tests mock the native HID boundary and use actual captured timer reports to
@@ -220,12 +220,12 @@ sender or special video hardware driver was added.
 ## Standalone executable packaging
 
 A single-file Windows x64 build is now prepared. Run
-[Build Windows EXE.cmd](../Build%20Windows%20EXE.cmd) on a Windows build machine,
+[Build Windows EXE.cmd](../../Build%20Windows%20EXE.cmd) on a Windows build machine,
 then distribute the generated ZIP with `DSANDisplay.exe` and license notices.
 The operating machine needs a browser but no Python installation. The packaged
 app keeps settings/logs under `%LOCALAPPDATA%\DSANDisplay`. A manual GitHub Actions
 workflow can also build on a Windows runner after the project is uploaded.
-See [executable build and validation status](windows-exe.md). The first executable has now been built on Windows Server 2022 x64;
+See [executable build and validation status](windows-build.md). The first executable has now been built on Windows Server 2022 x64;
 74 tests and the frozen smoke check passed there, with its downloaded SHA-256 verified. The existing source-mode launch scripts remain available.
 
 ## LAN browser access

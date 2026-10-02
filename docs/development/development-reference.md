@@ -2,37 +2,37 @@
 
 Archived from the original README. This document preserves investigation history
 and capture CLI details; dated status statements describe development at that time.
-For current setup and usage, see the [README](../README.md).
+For current setup and usage, see the [README](../../README.md).
 
 # DSAN Limitimer and PerfectCue display
 
 **Primary deployment target: Windows, with one Limitimer dongle and one PerfectCue
 dongle connected simultaneously.** Each has an explicit role, exact HID path,
-independent initialization and decoder. See [Windows setup](../docs/windows.md).
+independent initialization and decoder. See [Windows setup](windows.md).
 Limitimer has real controller captures; Next/Previous cue framing has emulator +
 dongle fixtures. Real PerfectCue and Windows USB hardware remain untested. The task
 **DSAN: mixed dongle preview** reads both connected Pi dongles simultaneously.
 
 The first confidence display is running on macOS, with live Pi USB input and
 capture replay. Open `http://127.0.0.1:8765` on the Mac while the **DSAN:
-confidence display** task is running. See [display setup and limits](../docs/display.md).
+confidence display** task is running. See [display setup and limits](display.md).
 Basic stopped/running/paused/zero/program-selection behavior now has real fixtures;
 direct Mac USB and full production/platform validation remain outstanding.
 
 **Windows executable built:** [successful Windows build](https://github.com/jpkelly/DMAN/actions/runs/36349142395) and
-[build/run instructions](../docs/windows-exe.md). It bundles Python, native HID support
+[build/run instructions](windows-build.md). It bundles Python, native HID support
 and browser assets into `DSANDisplay.exe`. All 74 tests and the frozen application
 smoke check passed on Windows Server 2022 x64. Physical USB/video output and real
 PerfectCue controller testing remain outstanding; this first executable is unsigned.
 
 **LAN access:** the GUI now listens on network interfaces by default (IPv4 and
 IPv6 where supported). Startup prints connection URLs; Ethernet or Wi-Fi can be
-used. `--host 127.0.0.1` restores local-only access. See [LAN access and scope](../docs/display.md#lan-access).
+used. `--host 127.0.0.1` restores local-only access. See [LAN access and scope](display.md#lan-access).
 
 **Core requirement: multiple dongles at once.** Each display will select an
 independent source and timer program, with separate input, decoding, capture and
 stale-data status. The owner observed conflicts with multiple dongles in the
-existing software. See the [multi-dongle requirements and design](../docs/multiple-dongles.md).
+existing software. See the [multi-dongle requirements and design](multiple-dongles.md).
 The owner also reports internal switches/jumpers select Limitimer versus
 PerfectCue operation. Each source's confirmed hardware role must match its
 software initialization and decoder; matching USB IDs do not establish that role.
@@ -45,8 +45,8 @@ DSAN's Limitimer installer recovered the actual HID startup/read path. Both use
 `0483:101A` and the same USB library. The Limitimer path sends `8D 00` in a HID
 output report after opening, then reads a count-prefixed byte stream. The owner
 explicitly confirms this dongle has worked with a Limitimer. See the
-[deep research report](../docs/dongle-research.md) and
-[reproducible installer audit](../tools/audit_dsan_installer.py).
+[deep research report](dongle-research.md) and
+[reproducible installer audit](../../tools/audit_dsan_installer.py).
 No hardware access or device writes occurred during that offline research.
 The runtime now has an explicit initialization-output option; it remains
 receive-only by default. Hardware attempts are documented below.
@@ -68,11 +68,11 @@ This section supersedes conflicting statements in the dated history below.
   total 60 and elapsed 0 across 110 consecutive states after an old-data prefix.
   Running, pause, zero and program selection also have labelled captures. P2 at
   32:00 matched while P1 remained paused at 0:52. Frames have absent checksums. See
-  [Pi results and capture-quality notes](../docs/pi5-investigation.md).
+  [Pi results and capture-quality notes](pi5-investigation.md).
 
 - **Latest diagnostic host:** the owner has now provided a ready Pi 5 at
   `pi@pi5start.local`. It is prepared with a temporary Linux USB quirk and a
-  time-limited enumeration capture. See [Pi investigation](../docs/pi5-investigation.md).
+  time-limited enumeration capture. See [Pi investigation](pi5-investigation.md).
   This supersedes the earlier preference to avoid Pi setup; the Mac/Windows
   application goal is unchanged.
 
@@ -92,10 +92,10 @@ This section supersedes conflicting statements in the dated history below.
   earlier per-test initialization approval requirement. Continue bounded,
   logged diagnostics rather than arbitrary command scanning.
 - **Decoding layers (new):** USB report → stream
-  ([hid_stream.py](../dsan_capture/hid_stream.py)) and Limitimer framing/state
-  decoding ([limitimer.py](../dsan_capture/limitimer.py)). Verified against upstream
+  ([hid_stream.py](../../dsan_capture/hid_stream.py)) and Limitimer framing/state
+  decoding ([limitimer.py](../../dsan_capture/limitimer.py)). Verified against upstream
   RS-485 Limitimer captures; our dongle has only produced consistent fragments.
-  See the [protocol notes](../docs/limitimer-protocol.md).
+  See the [protocol notes](limitimer-protocol.md).
 - **Implemented:** opt-in, logged initialization output (`--send-limitimer-init`).
 - **Display implemented:** live Pi-over-SSH decoding, per-source state, local
   browser UI, fullscreen, program selection, local warning/overtime settings,
@@ -107,7 +107,7 @@ This section supersedes conflicting statements in the dated history below.
   dongle stops responding during macOS's own enumeration, at its request for the
   dongle's bogus interface string (index 92), before any application runs.
   Ultraleap has been uninstalled at the owner's request. See the
-  [HID investigation](../docs/hid-investigation.md).
+  [HID investigation](hid-investigation.md).
 
 ## History: verified on this Mac
 
@@ -147,7 +147,7 @@ in the investigation notes. The owner reports internal switches/jumpers select
 the role; their exact positions have not been inspected or documented.
 The only available USB-C adapter is Anker; a hub-bypass comparison is currently
 unavailable. No evidence singles out the adapter as the cause. A
-[DSAN compatibility brief](../docs/dsan-compatibility-brief.md) records the questions
+[DSAN compatibility brief](dsan-compatibility-brief.md) records the questions
 needed to investigate the device configuration and input interface.
 A later full dongle power cycle restored one different 8-byte report, followed
 by silence. A subsequent detached two-minute recording completed with 120 empty
@@ -160,15 +160,15 @@ sent; see the current status above.
 
 HID investigation found a separate Mac process, **Ultraleap Hand Tracking**,
 repeatedly attempting to open the DSAN device. This is a potential conflict, not
-a proven cause. See [HID investigation](../docs/hid-investigation.md). A comparison
+a proven cause. See [HID investigation](hid-investigation.md). A comparison
 with that service stopped was authorized and performed. After a full dongle power
 cycle, one 8-byte report arrived, then silence; the descriptor request still timed
 out. This did not establish Ultraleap as the cause. **Ultraleap has been restored
 and verified running.** The first restoration prompt was accidentally canceled;
 the owner authorized a retry, which succeeded. See the investigation for details.
 
-See [investigation notes](../docs/investigation.md) for source evidence and the next
-hardware steps, and [third-party notices](../docs/third-party.md) before code reuse.
+See [investigation notes](investigation.md) for source evidence and the next
+hardware steps, and [third-party notices](../third-party.md) before code reuse.
 
 ## Stack and setup
 
@@ -217,7 +217,7 @@ existing file. Inventories include all visible serial/HID/USB devices, identifie
 and collection errors. `diff` compares records; reconnecting may change paths or
 USB addresses. An added device does not establish its electrical compatibility.
 
-The actual initial snapshots are under the ignored [inventories directory](../inventories/).
+The actual initial snapshots are under the ignored [inventories directory](../../inventories).
 The connected/disconnected/reconnected comparison and refreshed descriptors are saved.
 
 To inspect the advertised HID report descriptor after refreshing the device's
@@ -331,23 +331,23 @@ python -m compileall -q dsan_capture tests tools
 python -m unittest discover -s tests -v
 ```
 
-VS Code tasks for these checks are in [tasks.json](../.vscode/tasks.json).
+VS Code tasks for these checks are in [tasks.json](../../.vscode/tasks.json).
 Fifty-two tests cover byte preservation, read boundaries,
 corruption/truncation, interrupted sessions, timing, annotations, and transport
 failure. Sixteen decoding tests cover the USB report envelope and Limitimer
 framing/state against upstream capture excerpts and our real fragments; they do
 not verify decoding of our own dongle's stream. The actual USB access check can be
-replayed from [its session directory](../captures/initial-access-check/).
+replayed from [its session directory](../../captures/initial-access-check).
 The tests include two synthetic same-product USB sources and isolated close/
 missing-target behavior. USB inventories include port topology where available;
 it is a reconnect hint, not proof of unique physical identity.
 
-Module boundaries: [discovery](../dsan_capture/discovery.py) inventories devices;
-[transport](../dsan_capture/transport.py) returns bytes;
-[session](../dsan_capture/session.py) records and replays them;
-[hid_stream](../dsan_capture/hid_stream.py) unwraps USB reports;
-[limitimer](../dsan_capture/limitimer.py) frames and decodes the stream;
-[CLI](../dsan_capture/__main__.py) coordinates user actions. Timer-state mapping and
+Module boundaries: [discovery](../../dsan_capture/discovery.py) inventories devices;
+[transport](../../dsan_capture/transport.py) returns bytes;
+[session](../../dsan_capture/session.py) records and replays them;
+[hid_stream](../../dsan_capture/hid_stream.py) unwraps USB reports;
+[limitimer](../../dsan_capture/limitimer.py) frames and decodes the stream;
+[CLI](../../dsan_capture/__main__.py) coordinates user actions. Timer-state mapping and
 rendering remain separate later layers.
 The eventual display must mark the last value stale on disconnect or data timeout
 and never silently continue a local countdown. Fullscreen, program selection,

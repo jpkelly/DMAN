@@ -24,7 +24,7 @@ a real PerfectCue controller. These paths had already been configured in earlier
 work, including a successful `8D 01` command on the cue source. This experiment
 does not establish cold-start identification before initialization.
 
-The original [protocol evidence classifier](../dsan_capture/protocol_probe.py)
+The original [protocol evidence classifier](../../dsan_capture/protocol_probe.py)
 uses both stream decoders without consulting the recorded role or label:
 
 ```sh
