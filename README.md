@@ -1,6 +1,6 @@
 # DSAN Video Clock Display
 
-![A VC-2000-LT for Limitimer and a VC-2000PC for PerfectCue connected to one PC, showing a timer and cue on one display](docs/images/two-dongles.svg)
+![A VC-2000-LT for Limitimer and a VC-2000PC for PerfectCue connected to one PC, showing a timer and cue on one display](docs/images/vc-2000-devices.svg)
 
 Full-screen video display of DSAN Limitimer countdowns and PerfectCue Next/Previous
 cues, for confidence monitors and stage displays. It reads a VC-2000-LT (Limitimer) and a
