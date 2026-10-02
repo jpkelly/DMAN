@@ -1,4 +1,4 @@
-# DSAN Display
+# DSAN Video Clock Display
 
 ![A Limitimer dongle and a PerfectCue dongle connected to one PC, showing a timer and cue on one display](docs/images/two-dongles.svg)
 
