@@ -1,6 +1,6 @@
-# DSAN Display user guide
+# User guide
 
-DSAN Display shows a Limitimer countdown and PerfectCue Next/Previous cues as a
+This software shows a Limitimer countdown and PerfectCue Next/Previous cues as a
 full-screen video output for confidence monitors and stage displays. It reads a
 VC-2000-LT (Limitimer) and a VC-2000PC (PerfectCue) at the same time on one PC.
 
@@ -86,7 +86,7 @@ triangle. Each cue shows for about one second.
 
 The console prints a network address, such as `http://192.168.1.20:8765/`. Open
 it on another computer or tablet on the same network. If it doesn't connect,
-allow DSAN Display through Windows Firewall for your private network.
+allow DSANDisplay.exe through Windows Firewall for your private network.
 
 There is no login. Anyone who can reach the address can change settings,
 change device setup, or quit the app. Use a trusted network, or limit access to
@@ -135,3 +135,10 @@ local device identifiers; review them before sharing.
 - The executable is unsigned, so Windows may warn you the first time you run it.
 - The app shows whatever the browser window shows. It doesn't set display
   resolution or produce SDI or NDI output.
+
+## Trademarks
+
+This software is an independent project and is not affiliated with, endorsed by,
+or sponsored by DSAN Corporation. DSAN, Limitimer, PerfectCue, and VideoClock are
+trademarks of DSAN Corporation. Product names and model numbers are used only to
+identify compatible hardware.

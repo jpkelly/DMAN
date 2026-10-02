@@ -64,3 +64,10 @@ supported.
 For bug reports, include the app version, OS, controller and dongle models, and
 steps to reproduce. Logs are in `%LOCALAPPDATA%\DSANDisplay`; check them for local
 device identifiers before sharing.
+
+## Trademarks
+
+This software is an independent project and is not affiliated with, endorsed by,
+or sponsored by DSAN Corporation. DSAN, Limitimer, PerfectCue, and VideoClock are
+trademarks of DSAN Corporation. Product names and model numbers are used only to
+identify compatible hardware.
