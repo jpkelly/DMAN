@@ -2,23 +2,21 @@
 
 DSAN Display shows a Limitimer countdown and PerfectCue Next/Previous cues as a
 full-screen video output for confidence monitors and stage displays. It reads a
-Limitimer dongle and a PerfectCue dongle at the same time on one PC.
+VC-2000-LT (Limitimer) and a VC-2000PC (PerfectCue) at the same time on one PC.
 
 ## Requirements
 
 - Windows 10 or 11, x64
 - A web browser (Chrome or Edge recommended)
-- A DSAN USB dongle for each controller: one set up for Limitimer, one for
-  PerfectCue. You can use either or both.
+- A DSAN VC-2000-LT for Limitimer and/or a VC-2000PC for PerfectCue. You can use either or both.
 
 Each dongle is set to Limitimer or PerfectCue by DIP switches inside it. Open the
 dongle to reach them; the correct positions for each role are marked inside. Set one
 dongle for each controller before you start. See the
 [DSAN VideoClock documentation](https://www.dsan.com/video-clock-software/) for more.
 
-Tested with a Limitimer PRO-2000 controller and VC-2000PC dongle, and with
-PerfectCue Next/Previous from a PerfectCue emulator through a second DSAN dongle.
-Both dongles report firmware `Ver 0.17 10/03/14`.
+Tested with a VC-2000-LT and a VC-2000PC, a Limitimer PRO-2000 controller, and
+PerfectCue Next/Previous from a PerfectCue emulator. Both report firmware `Ver 0.17 10/03/14`.
 
 No vendor software or extra drivers are needed. Close DSAN VideoClock and any
 other software that uses the dongles before starting.
